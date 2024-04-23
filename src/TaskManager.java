@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TaskManager {
-
+// Менеджер
     private Integer idCounter=0;
     public Integer getIdCounter() {
         return idCounter++;
