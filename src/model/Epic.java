@@ -10,10 +10,6 @@ public class Epic extends Task { // класс с эпиками
         super(name, description, Status.NEW);
     }
 
-    public Epic( String name, Integer id, String description) {
-        super(name, id, description, Status.NEW);
-    }
-
     public ArrayList<Subtask> getSubtasks() {
         return subtasks;
     }

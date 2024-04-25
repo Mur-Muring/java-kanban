@@ -123,8 +123,8 @@ public class TaskManager {// Менеджер
     public void deleteSubtasks() {
         subtasks.clear();
         for (Epic epic : epics.values()) {
-            ArrayList<Subtask> epicsSubtaks = epic.getSubtasks();
-            epicsSubtaks.clear();
+            ArrayList<Subtask> epicsSubtasks=epic.getSubtasks();
+            epicsSubtasks.clear();
             epic.updateStatus();
         }
     }
