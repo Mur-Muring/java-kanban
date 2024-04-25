@@ -3,7 +3,6 @@ package model;
 import java.util.ArrayList;
 
 public class Epic extends Task { // класс с эпиками
-
     private final ArrayList<Subtask> subtasks = new ArrayList<>();
 
     public Epic(String name, String description) {

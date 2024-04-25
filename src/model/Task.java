@@ -14,28 +14,28 @@ public class Task {// класс с задачами
 
     public Task(String name, Integer id, String description, Status status) {
         this.name = name;
-        this.id=id;
+        this.id = id;
         this.description = description;
-        this.status=status;
+        this.status = status;
     }
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
-        this.status=status;
+        this.status = status;
     }
 
     public Task(String name, String description) {
         this.name = name;
         this.description = description;
-        this.status=Status.NEW;
+        this.status = Status.NEW;
     }
 
     public Task(String name, Integer id, String description) {
         this.name = name;
         this.id = id;
         this.description = description;
-        this.status=Status.NEW;
+        this.status = Status.NEW;
     }
 
     public String getName() {
@@ -69,6 +69,7 @@ public class Task {// класс с задачами
     public void setStatus(Status status) {
         this.status = status;
     }
+
     // исправила И на ИЛИ (неправильно обьединила два условия)
     @Override
     public boolean equals(Object o) {
