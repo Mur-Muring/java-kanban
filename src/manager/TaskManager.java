@@ -1,6 +1,7 @@
 package manager;
 
 import model.Epic;
+import model.Status;
 import model.Subtask;
 import model.Task;
 
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TaskManager {// Менеджер
-    // за форматирование извиняюсь, хотела вконце и забыла
+    // за форматирование извиняюсь, хотела вконце и забыла, надеюсь не забуду в этот раз
 
     private Integer idCounter = 0;
 
@@ -38,8 +39,10 @@ public class TaskManager {// Менеджер
         }
         subtask.setIdTask(getIdCounter());
         subtasks.put(subtask.getIdTask(), subtask);
-        epic.addSubtask(subtask);
-        epic.updateStatus();
+        int epicId = subtask.getIdEpic();
+        ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
+        subtaskIds.add(subtask.getIdTask());
+        updateStatus(epicId);
         return subtask;
     }
 
@@ -59,28 +62,15 @@ public class TaskManager {// Менеджер
         updateEpic.setDescription(epic.getDescription());
     }
 
-    // заменила == на "equals" везде, где сравнивала
+
     public void updateSubtask(Subtask subtask) {
-        if (subtasks.get(subtask.getIdTask()) == null) {
-            return;
-        }
-        Epic epic = epics.get(subtask.getIdEpic());
-        if (epic == null) {
-            return;
-        }
-        if (subtask.getIdEpic().equals(subtasks.get(subtask.getIdTask()).getIdEpic())) {
-            ArrayList<Subtask> subtaskForEpic = epic.getSubtasks();
-            for (int i = 0; i < subtaskForEpic.size(); i++) {
-                if (subtaskForEpic.get(i).getIdTask().equals(subtask.getIdEpic())) {
-                    subtaskForEpic.set(i, subtask);
-                    epic.addSubtask(subtask);
-                    epic.updateStatus();
-                    break;
-                }
-            }
+        if (epics.containsKey(subtask.getIdEpic())) {
             subtasks.put(subtask.getIdTask(), subtask);
+            int epicId = subtasks.get(subtask.getIdTask()).getIdEpic();
+            updateStatus(epicId);
         }
     }
+
 
     // Получение списка всех задач
     public ArrayList<Task> getAllTasks() {
@@ -96,7 +86,7 @@ public class TaskManager {// Менеджер
     }
 
     public ArrayList<Subtask> getSubtasksEpic(Epic epic) {
-        return new ArrayList<>(epic.getSubtasks());
+        return new ArrayList<>(subtasks.values());
     }
 
     // Получение по ID
@@ -123,12 +113,11 @@ public class TaskManager {// Менеджер
     }
 
     public void deleteSubtasks() {
-        subtasks.clear();
         for (Epic epic : epics.values()) {
-            ArrayList<Subtask> epicsSubtasks = epic.getSubtasks();
-            epicsSubtasks.clear();
-            epic.updateStatus();
+            epic.getSubtasks().clear();
+            updateStatus(epic.getIdTask());
         }
+        subtasks.clear();
     }
 
     //Удаление по ID
@@ -138,35 +127,47 @@ public class TaskManager {// Менеджер
     }
 
     public void deleteByIdEpic(Integer id) {
-        Epic epic = epics.get(id);
-        if (epic != null) {
-            ArrayList<Subtask> epicsSubtasks = epic.getSubtasks();
-            for (Subtask subtask : epicsSubtasks) {
-                subtasks.remove(subtask.getIdTask());
-            } // убрала чистку подзадач
-            epics.remove(id);
+        ArrayList<Integer> subtaskIds = epics.get(id).getSubtasks();
+        for (Integer subtaskId : subtaskIds) {
+            subtasks.remove(subtaskId);
         }
+        epics.remove(id);
     }
 
+
     public void deleteByIdSubtask(Integer id) {
-        Subtask subtask = subtasks.remove(id);
-        Epic epic = epics.get(subtask.getIdEpic());
-        if (epic == null) {
-            return;
-        }
-        ArrayList<Subtask> epicsSubtasks = epic.getSubtasks();
-        for (int i = 0; i < epicsSubtasks.size(); i++) {
-            if (epicsSubtasks.get(i).getIdTask().equals(id)) {
-                epicsSubtasks.remove(i); // конечно тут i
-                break;
-            }
-        }
-        epic.updateStatus();
+        int epicId = subtasks.get(id).getIdEpic();
+        ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
+        subtaskIds.remove(id);
+        subtasks.remove(id);
+        updateStatus(epicId);
     }
+
 
     // ну вот он теперь тут одинокий, таких тонкостей у нас не было, спасибо учту
     private int getIdCounter() {
         return idCounter++;
+    }
+
+    // а нет к нему пришла проверка статуса
+    private void updateStatus(int idEpic) {
+        int counterNew = 0;
+        int counterDone = 0;
+        ArrayList<Integer> subtaskIds = epics.get(idEpic).getSubtasks();
+        for (Integer subtaskId : subtaskIds) {
+            if (subtasks.get(subtaskId).getStatus().equals(Status.NEW)) {
+                counterNew++;
+            } else if (subtasks.get(subtaskId).getStatus().equals(Status.DONE)) {
+                counterDone++;
+            }
+        }
+        if (subtaskIds.size() == counterNew || subtaskIds.isEmpty()) {
+            epics.get(idEpic).setStatus(Status.NEW);
+        } else if (subtaskIds.size() == counterDone) {
+            epics.get(idEpic).setStatus(Status.DONE);
+        } else {
+            epics.get(idEpic).setStatus(Status.IN_PROGRESS);
+        }
     }
 
 }

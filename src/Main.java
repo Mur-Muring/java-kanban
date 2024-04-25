@@ -48,6 +48,7 @@ public class Main {
         System.out.println("Посмотрим на подзадачу " + subtask1);
         System.out.println("Посмотрим на подзадачу " + subtask2);
         System.out.println("Посмотри на статус эпика " + epic);
+        System.out.println("Посмотри на статус эпика " + epic1);
         System.out.println("Посмотрим на статус эпика " + epic2);
 
         Task newTask = new Task("Воскресенье", task.getIdTask(), "день уборки");
@@ -63,7 +64,7 @@ public class Main {
         Subtask newSubtask = taskManager.getByIdSubtask(subtask2.getIdTask());
         newSubtask.setName("Измененная подзадача");
         newSubtask.setDescription("Измененное описание подзадачи");
-        newSubtask.setStatus(Status.IN_PROGRESS);
+        newSubtask.setStatus(Status.DONE);
         taskManager.updateSubtask(newSubtask);
         System.out.println(newSubtask);
 
