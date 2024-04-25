@@ -1,3 +1,5 @@
+package model;
+
 public class Subtask extends Task {// класс с подзадачами
 
     private Integer idEpic;
@@ -12,10 +14,7 @@ public class Subtask extends Task {// класс с подзадачами
         this.idEpic = idEpic;
     }
 
-    public Subtask(String name, String description, Integer idEpic) {
-        super(name, description);
-        this.idEpic = idEpic;
-    }
+
     public Integer getIdEpic() {
         return idEpic;
     }

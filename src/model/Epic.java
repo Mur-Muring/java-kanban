@@ -1,45 +1,46 @@
-import java.util.ArrayList;
+package model;
 
+import java.util.ArrayList;
 
 public class Epic extends Task { // класс с эпиками
 
-private final ArrayList<Subtask> subtasks=new ArrayList<>();
+    private final ArrayList<Subtask> subtasks = new ArrayList<>();
 
     public Epic(String name, String description) {
         super(name, description, Status.NEW);
     }
 
-    public Epic(String name, Integer id, String description) {
-        super(name, id, description,Status.NEW);
+    public Epic( String name, Integer id, String description) {
+        super(name, id, description, Status.NEW);
     }
 
     public ArrayList<Subtask> getSubtasks() {
         return subtasks;
     }
 
-    public void addSubtasks(Subtask subtask){
+    public void addSubtask(Subtask subtask) {
         this.subtasks.add(subtask);
     }
 
-    public void updateStatus(){
-        boolean allNEW=true;
-        boolean allDONE=true;
-        if(subtasks.isEmpty()){
+    public void updateStatus() {
+        if (subtasks.isEmpty()) {
             setStatus(Status.NEW);
             return;
         }
-        for (Subtask subtask: this.subtasks){
-            if(subtask.getStatus()!=Status.NEW){
-                allNEW=false;
+        boolean allNEW = true;
+        boolean allDONE = true;
+        for (Subtask subtask : this.subtasks) {
+            if (subtask.getStatus() != Status.NEW) {
+                allNEW = false;
             }
-            if (subtask.getStatus()!=Status.DONE){
-                allDONE=false;
+            if (subtask.getStatus() != Status.DONE) {
+                allDONE = false;
             }
-            if(!allNEW && !allDONE){
+            if (!allNEW && !allDONE) {
                 setStatus(Status.IN_PROGRESS);
             }
         }
-        if(allNEW){
+        if (allNEW) {
             setStatus(Status.NEW);
         } else if (allDONE) {
             setStatus(Status.DONE);
@@ -58,4 +59,3 @@ private final ArrayList<Subtask> subtasks=new ArrayList<>();
                 '}';
     }
 }
-
