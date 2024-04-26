@@ -38,10 +38,7 @@ public class Main {
         taskManager.addSubtask(subtask1);
         taskManager.addSubtask(subtask2);
 
-        taskManager.getSubtasksEpic(epic1);
-        taskManager.getSubtasksEpic(epic1);
-        taskManager.getSubtasksEpic(epic1);
-        System.out.println(taskManager.getSubtasksEpic(epic1));
+        System.out.println(taskManager.getSubtasksEpic(3));
         System.out.println(taskManager.getByIdTask(task.getIdTask()));
 
         System.out.println("Посмотрим на подзадачу " + subtask);
@@ -85,5 +82,4 @@ public class Main {
         System.out.println(taskManager.getAllSubtasks());
 
     }
-
 }

@@ -8,11 +8,9 @@ public class Subtask extends Task {// класс с подзадачами
         this.idEpic = idEpic;
     }
 
-
     public Integer getIdEpic() {
         return idEpic;
     }
-
 
     @Override
     public String toString() {

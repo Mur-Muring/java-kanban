@@ -9,15 +9,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TaskManager {// Менеджер
-    // за форматирование извиняюсь, хотела вконце и забыла, надеюсь не забуду в этот раз
-
     private Integer idCounter = 0;
 
     // Хранение всех типов данных
     private final HashMap<Integer, Task> tasks = new HashMap<>();
     private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     private final HashMap<Integer, Epic> epics = new HashMap<>();
-
 
     // Создание
     public Task addTask(Task task) {
@@ -62,7 +59,6 @@ public class TaskManager {// Менеджер
         updateEpic.setDescription(epic.getDescription());
     }
 
-
     public void updateSubtask(Subtask subtask) {
         if (epics.containsKey(subtask.getIdEpic())) {
             subtasks.put(subtask.getIdTask(), subtask);
@@ -70,7 +66,6 @@ public class TaskManager {// Менеджер
             updateStatus(epicId);
         }
     }
-
 
     // Получение списка всех задач
     public ArrayList<Task> getAllTasks() {
@@ -85,8 +80,14 @@ public class TaskManager {// Менеджер
         return new ArrayList<>(subtasks.values());
     }
 
-    public ArrayList<Subtask> getSubtasksEpic(Epic epic) {
-        return new ArrayList<>(subtasks.values());
+    // Изменила вывод подзадач конктретного эпика
+    public ArrayList<Subtask> getSubtasksEpic(Integer id) {
+        ArrayList<Integer> subtasksID = epics.get(id).getSubtasks();
+        ArrayList<Subtask> subtasksEpic = new ArrayList<>();
+        for (int subtaskId : subtasksID) {
+            subtasksEpic.add(subtasks.get(subtaskId));
+        }
+        return subtasksEpic;
     }
 
     // Получение по ID
@@ -121,7 +122,6 @@ public class TaskManager {// Менеджер
     }
 
     //Удаление по ID
-
     public void deleteByIdTask(Integer id) {
         tasks.remove(id);
     }
@@ -134,7 +134,6 @@ public class TaskManager {// Менеджер
         epics.remove(id);
     }
 
-
     public void deleteByIdSubtask(Integer id) {
         int epicId = subtasks.get(id).getIdEpic();
         ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
@@ -142,7 +141,6 @@ public class TaskManager {// Менеджер
         subtasks.remove(id);
         updateStatus(epicId);
     }
-
 
     // ну вот он теперь тут одинокий, таких тонкостей у нас не было, спасибо учту
     private int getIdCounter() {
@@ -169,5 +167,4 @@ public class TaskManager {// Менеджер
             epics.get(idEpic).setStatus(Status.IN_PROGRESS);
         }
     }
-
 }
