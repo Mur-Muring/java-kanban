@@ -1,3 +1,4 @@
+import manager.InMemoryTaskManager;
 import manager.TaskManager;
 import model.Epic;
 import model.Status;
@@ -6,7 +7,7 @@ import model.Task;
 
 public class Main {
     public static void main(String[] args) {
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager= new InMemoryTaskManager();
         Task task = new Task("Понедельник", "день тяжелый");
         taskManager.addTask(task);
         Task task1 = new Task("Вторник", "день рабочий");
