@@ -8,10 +8,6 @@ public class Task {// класс с задачами
     private String description;
     private Status status;
 
-    /* поменяла, теперь все новые задачи по умолчанию будут NEW, а при обновлении если пользователь
-    не укажет статус, то NEW либо сможет задать статус сам (условиями задачи не запрешено)
-     */
-
     public Task(String name, Integer id, String description, Status status) {
         this.name = name;
         this.id = id;
@@ -36,6 +32,12 @@ public class Task {// класс с задачами
         this.id = id;
         this.description = description;
         this.status = Status.NEW;
+    }
+
+    public Task(Task task) {
+        this(task.name, task.description);
+        this.status = task.status;
+        this.id = task.id;
     }
 
     public String getName() {
@@ -70,7 +72,6 @@ public class Task {// класс с задачами
         this.status = status;
     }
 
-    // исправила И на ИЛИ (неправильно обьединила два условия)
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -13,7 +13,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     private Integer idCounter = 0;
 
-    HistoryManager historyManager=Managers.getDefaultHistory();
+    HistoryManager historyManager = Managers.getDefaultHistory();
 
     // Хранение всех типов данных
     private final HashMap<Integer, Task> tasks = new HashMap<>();
@@ -166,6 +166,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks.remove(id);
         updateStatus(epicId);
     }
+
     // История
     @Override
     public List<Task> getHistory() {
@@ -174,6 +175,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     private int getIdCounter() {
         return idCounter++;
+    }
+
+    public HashMap<Integer, Task> getTasks() {
+        return tasks;
     }
 
     private void updateStatus(int idEpic) {

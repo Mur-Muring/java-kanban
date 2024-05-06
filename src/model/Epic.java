@@ -1,11 +1,9 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Epic extends Task { // класс с эпиками
-  /* решила я рискнуть и переписать на хранение ID,
-  надесь не пожалею об этом, так как переписала половину менеджера
-   */
     private final ArrayList<Integer> subtasks = new ArrayList<>();
 
     public Epic(String name, String description) {
@@ -16,8 +14,18 @@ public class Epic extends Task { // класс с эпиками
         return subtasks;
     }
 
-    public void addSubtask(Integer integer) {
-        this.subtasks.add(integer);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Epic epic = (Epic) o;
+        return Objects.equals(subtasks, epic.subtasks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), subtasks);
     }
 
     @Override

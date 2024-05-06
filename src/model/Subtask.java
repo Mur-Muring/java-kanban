@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 public class Subtask extends Task {// класс с подзадачами
     private Integer idEpic;
 
@@ -10,6 +12,20 @@ public class Subtask extends Task {// класс с подзадачами
 
     public Integer getIdEpic() {
         return idEpic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Subtask subtask = (Subtask) o;
+        return Objects.equals(idEpic, subtask.idEpic);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), idEpic);
     }
 
     @Override
