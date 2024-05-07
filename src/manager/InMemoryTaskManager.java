@@ -1,3 +1,5 @@
+// Исправила двойное обращение в Мапе в методах поиска по ID
+
 package manager;
 
 import model.Epic;
@@ -106,20 +108,23 @@ public class InMemoryTaskManager implements TaskManager {
     // Получение по ID
     @Override
     public Task getByIdTask(Integer id) {
-        historyManager.add(tasks.get(id));
-        return tasks.get(id);
+        Task task=tasks.get(id);
+        historyManager.add(task);
+        return task;
     }
 
     @Override
     public Epic getByIdEpic(Integer id) {
-        historyManager.add(epics.get(id));
-        return epics.get(id);
+        Epic epic=epics.get(id);
+        historyManager.add(epic);
+        return epic;
     }
 
     @Override
     public Subtask getByIdSubtask(Integer id) {
-        historyManager.add(subtasks.get(id));
-        return subtasks.get(id);
+        Subtask subtask=subtasks.get(id);
+        historyManager.add(subtask);
+        return subtask;
     }
 
     // Удаление всего

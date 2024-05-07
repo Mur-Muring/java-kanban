@@ -1,3 +1,11 @@
+/*
+Имправления:
+1. Правильное название static константы
+2. Убрала static в объявлении списка историй
+3. Переписала метод add()
+4. Сделала метод copyHistory() приватным
+
+ */
 package manager;
 
 import model.Task;
@@ -7,22 +15,20 @@ import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    private static final int historyListSize = 10;
-    private static final List<Task> history = new ArrayList<>();
+    private static final int HISTORY_LIST_SIZE = 10;
+    private  final List<Task> history = new ArrayList<>();
 
     @Override
     public void add(Task task) {
         if (task != null) {
-            if (history.size() < historyListSize) {
-                history.add(new Task(task));
-            } else {
+            if (history.size() >= HISTORY_LIST_SIZE) {
                 history.removeFirst();
-                history.add(new Task(task));
             }
+            history.add(new Task(task));
         }
     }
 
-    public List<Task> copyHistory() {
+    private List<Task> copyHistory() {
         List<Task> list = new ArrayList<>();
         for (Task task : history) {
             list.add(new Task(task));

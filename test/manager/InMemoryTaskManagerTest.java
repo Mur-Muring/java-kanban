@@ -1,8 +1,13 @@
-package Test.Manager;
+/*
+1. Исправила названия методов на маденькую букву
+2. Написала тесты на обновлене задач, проверила замену имени, описания и статуса
+3. Написала тесты на проверку удаления задач
+4. Написала тест на проверку изменения статуса
+
+ */
+package manager;
 
 
-import manager.Managers;
-import manager.TaskManager;
 import model.Epic;
 import model.Status;
 import model.Subtask;
@@ -11,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,14 +34,14 @@ class InMemoryTaskManagerTest {
 
     //Проверяем, что объект Subtask нельзя сделать своим же эпиком
     @Test
-    public void SubtaskCanNotBeEpic() {
+    public void subtaskCanNotBeEpic() {
         Subtask subtask = new Subtask("Подзадача", "...", Status.NEW, 1);
         assertNull(subtask.getIdTask());
     }
 
     //Проверяем, что InMemoryTaskManager действительно добавляет задачи разного типа и может найти их по id
     @Test
-    public void AddNewTask() {
+    public void addNewTask() {
         Task task = new Task("Понедельник", "день тяжелый");
         taskManager.addTask(task);
         int id = task.getIdTask();
@@ -51,7 +57,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    public void AddNewEpic() {
+    public void addNewEpic() {
         Epic epic = new Epic("Четверг", "маленькая пятница");
         taskManager.addEpic(epic);
         int id = epic.getIdTask();
@@ -67,7 +73,7 @@ class InMemoryTaskManagerTest {
     }
 
     @Test
-    public void AddNewSubtask() {
+    public void addNewSubtask() {
         Epic epic = new Epic("Четверг", "маленькая пятница");
         taskManager.addEpic(epic);
         Subtask subtask = new Subtask("утро", "проснуться", Status.IN_PROGRESS, epic.getIdTask());
@@ -87,7 +93,7 @@ class InMemoryTaskManagerTest {
     //Проверяем, что задачи с заданным id и сгенерированным id не конфликтуют внутри менеджера
     // даже если пользователь по ошибке воспользуется конструктором с id, в мапу он пойдет с сгенирирвоанным id
     @Test
-    public void NoConflictBetweenTasksWithGeneratedAndPreassignedIDs() {
+    public void noConflictBetweenTasksWithGeneratedAndPreassignedIDs() {
         Task taskPreassigned = new Task("Кот", 0, "...");
         taskManager.addTask(taskPreassigned);
         Task taskGenerate = new Task("Собака", "...");
@@ -121,5 +127,113 @@ class InMemoryTaskManagerTest {
         assertEquals(id, idAfter, "ID задач не совпадают");
         assertEquals(status, statusAfter, "Статус задач не совпадают");
     }
+
+    // Проверяем, что задачи обновляются
+    @Test
+    public void updateTaskTest() {
+        Task task = new Task("Ночь", "...");
+        taskManager.addTask(task);
+        task = new Task("День", "...");
+        taskManager.updateTask(task);
+
+        assertNotNull(task, "Задача пустая");
+        assertNotEquals("Ночь", task.getName(), "Задача не обновилась");
+    }
+
+    @Test
+    public void updateEpicTest() {
+        Epic epic = new Epic("...", "спать");
+        taskManager.addEpic(epic);
+        epic = new Epic("...", "лунатить");
+        taskManager.updateEpic(epic);
+
+        assertNotNull(epic, "Задача пустая");
+        assertNotEquals("спать", epic.getDescription());
+    }
+
+    @Test
+    public void updateSubtaskTest() {
+        Subtask subtask = new Subtask("...", "...", Status.IN_PROGRESS, 1);
+        taskManager.addSubtask(subtask);
+        subtask = new Subtask("...", "...", Status.DONE, 1);
+        taskManager.updateSubtask(subtask);
+
+        assertNotNull(subtask, "Задача пустая");
+        assertNotEquals(Status.IN_PROGRESS, subtask.getStatus());
+    }
+
+    // Проверяем, что задачи удаляются
+    @Test
+    public void deleteTaskTest() {
+        Task task1 = new Task("Ночь", "...");
+        taskManager.addTask(task1);
+        int id = task1.getIdTask();
+        Task task2 = new Task("День", "...");
+        taskManager.addTask(task2);
+
+        taskManager.deleteByIdTask(id);
+        int expected = 1;
+        int actual = taskManager.getAllTasks().size();
+        assertEquals(expected, actual, "Задача по ID не удалена");
+
+        taskManager.deleteTasks();
+        int expected2 = 0;
+        int actual2 = taskManager.getAllTasks().size();
+        assertEquals(expected2, actual2, "Все задачи не удалены");
+    }
+
+    @Test
+    public void deleteEpicTest() {
+        Epic epic1 = new Epic("Ночь", "...");
+        taskManager.addEpic(epic1);
+        int id = epic1.getIdTask();
+        Epic epic2 = new Epic("День", "...");
+        taskManager.addEpic(epic2);
+
+        taskManager.deleteByIdEpic(id);
+        int expected = 1;
+        int actual = taskManager.getAllEpics().size();
+        assertEquals(expected, actual, "Задача по ID не удалена");
+
+        taskManager.deleteEpics();
+        int expected2 = 0;
+        int actual2 = taskManager.getAllEpics().size();
+        assertEquals(expected2, actual2, "Все задачи не удалены");
+    }
+
+    @Test
+    public void deleteSubtaskTest() {
+        Epic epic = new Epic("Ночь", "...");
+        taskManager.addEpic(epic);
+        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0);
+        taskManager.addSubtask(subtask1);
+        Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0);
+        taskManager.addSubtask(subtask2);
+
+        taskManager.deleteByIdSubtask(subtask2.getIdTask());
+        int expected = 1;
+        int actual = taskManager.getAllSubtasks().size();
+        assertEquals(expected, actual, "Задача по ID не удалена");
+
+        taskManager.deleteSubtasks();
+        int expected2 = 0;
+        int actual2 = taskManager.getAllSubtasks().size();
+        assertEquals(expected2, actual2, "Все задачи не удалены");
+    }
+
+    @Test
+    public void updateStatusTest() {
+        Epic epic = new Epic("Ночь", "...");
+        taskManager.addEpic(epic);
+        Status status1 = epic.getStatus();
+        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0);
+        taskManager.addSubtask(subtask1);
+        Subtask subtask2 = new Subtask("...", "...", Status.DONE, 0);
+        taskManager.addSubtask(subtask2);
+        Status status2 = epic.getStatus();
+
+        assertNotEquals(status1, status2, "Статус не обновился");
+    }
+
 }
 
