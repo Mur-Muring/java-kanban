@@ -25,9 +25,11 @@ public class InMemoryTaskManager implements TaskManager {
     // Создание
     @Override
     public Task addTask(Task task) {
-        task.setIdTask(getIdCounter());
-        tasks.put(task.getIdTask(), task);
-        return task;
+        if (task!=null) {
+            task.setIdTask(getIdCounter());
+            tasks.put(task.getIdTask(), task);
+        }
+            return task;
     }
 
     @Override
