@@ -1,4 +1,6 @@
-// Добавила тест на хранение не больше 10 задач
+// Переделала тест на проверку не более 10 историй. Спасибо, Ваш вариант гораздо лучше.
+// Проверку на null вынесла в отельный тест, возможно это повляет на вреся обработки,но мы еще не проходили
+// и надеюсь это не будет ошибкой
 
 package manager;
 
@@ -10,16 +12,16 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 
 class InMemoryHistoryManagerTest {
 
     private TaskManager manager;
+    private HistoryManager historyManager;
 
     @BeforeEach
     public void testManager() {
         manager = Managers.getDefaultTask();
+        historyManager = Managers.getDefaultHistory();
     }
 
     @Test
@@ -58,53 +60,19 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void addTaskTest() {
-        Task task = null;
-        Task task1 = new Task("...", "...");
-        Task task2 = new Task("...", "...");
-        Task task3 = new Task("...", "...");
-        Task task4 = new Task("...", "...");
-        Task task5 = new Task("...", "...");
-        Task task6 = new Task("...", "...");
-        Task task7 = new Task("...", "...");
-        Task task8 = new Task("...", "...");
-        Task task9 = new Task("...", "...");
-        Task task10 = new Task("...", "...");
-        manager.addTask(task1);
-        manager.addTask(task2);
-        manager.addTask(task3);
-        manager.addTask(task4);
-        manager.addTask(task5);
-        manager.addTask(task6);
-        manager.addTask(task7);
-        manager.addTask(task8);
-        manager.addTask(task9);
-        manager.addTask(task10);
-        manager.addTask(task);
-
-        List<Task> saveTasks = new ArrayList<>();
-        saveTasks.add(task);
-        saveTasks.add(task1);
-        saveTasks.add(task2);
-        saveTasks.add(task3);
-        saveTasks.add(task4);
-        saveTasks.add(task5);
-        saveTasks.add(task6);
-        saveTasks.add(task7);
-        saveTasks.add(task8);
-        saveTasks.add(task9);
-        saveTasks.add(task10);
-
-        for (int i = 0; i < saveTasks.size(); i++) {
-            manager.getByIdTask(i);
+        for (int i = 0; i < 11; i++) {
+            historyManager.add(new Task("...", "..."));
         }
-        Assertions.assertNotEquals(manager.getHistory(), saveTasks, "Добавлен null");
+        Assertions.assertEquals(10, historyManager.getHistory().size(), "В истории храниться больше 10 позтций");
+    }
 
-        Task task11 = new Task("11", "...");
-        manager.addTask(task11);
-        saveTasks.add(task11);
-        int idTask11 = task11.getIdTask();
-        manager.getByIdTask(idTask11);
-
-        Assertions.assertEquals(10, manager.getHistory().size(), "В истории больше 10 позиций");
+    @Test
+    public void addTaskNullTest() {
+        for (int i = 0; i < 4; i++) {
+            historyManager.add(new Task("...", "..."));
+        }
+        Task taskNull = null;
+        historyManager.add(taskNull);
+        Assertions.assertEquals(4, historyManager.getHistory().size(), "В историю пробралась пустая задача");
     }
 }
