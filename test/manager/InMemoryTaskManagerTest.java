@@ -1,9 +1,7 @@
 /*
-1. Исправила названия методов на маденькую букву
-2. Написала тесты на обновлене задач, проверила замену имени, описания и статуса
-3. Написала тесты на проверку удаления задач
-4. Написала тест на проверку изменения статуса
-
+- Модернизировала тест deleteSubtaskTest(), теперь он дополнительно проверяет, что id удаленной подзадачи
+не храниться в эпике
+- Добавила тесты влияние set на менеджер
  */
 package manager;
 
@@ -210,10 +208,19 @@ class InMemoryTaskManagerTest {
         Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0);
         taskManager.addSubtask(subtask2);
 
+        Integer idDelete = subtask2.getIdTask();
+        ArrayList<Integer> test = epic.getSubtasks();
+        boolean idInSubtaskList = test.contains(idDelete);
+        assertTrue(idInSubtaskList, "Id подзадачи, которая будет удалена изначально не добавилась в список");
+
         taskManager.deleteByIdSubtask(subtask2.getIdTask());
         int expected = 1;
         int actual = taskManager.getAllSubtasks().size();
         assertEquals(expected, actual, "Задача по ID не удалена");
+
+        ArrayList<Integer> test2 = epic.getSubtasks();
+        boolean idInSubtaskList2 = test2.contains(idDelete);
+        assertFalse(idInSubtaskList2, "Id удвленной подзадачи осталось в списке эпика");
 
         taskManager.deleteSubtasks();
         int expected2 = 0;
@@ -235,5 +242,59 @@ class InMemoryTaskManagerTest {
         assertNotEquals(status1, status2, "Статус не обновился");
     }
 
+    // Проверяем вляет ли setter на работу менеджера
+    @Test
+    public void checkImmutabilityOfTaskWhenCreatedValueChanged() {
+        Task created = taskManager.addTask(new Task("1", "www"));
+        Task returned = taskManager.getByIdTask(created.getIdTask());
+        Task change = new Task(returned);
+        change.setName("2");
+        assertNotEquals(change.getName(), taskManager.getByIdTask(created.getIdTask()).getName());
+    }
+
+    @Test
+    public void checkImmutabilityOfTaskWhenSourceChanged() {
+        Task sourse = new Task("1", "www");
+        Task created = new Task(sourse.getName(), sourse.getDescription());
+        taskManager.addTask(created);
+        sourse.setName("2");
+        assertNotEquals(sourse.getName(), taskManager.getByIdTask(created.getIdTask()).getName());
+    }
+
+    @Test
+    public void checkImmutabilityOfEpicWhenCreatedValueChanged() {
+        Epic created = taskManager.addEpic(new Epic("1", "www"));
+        Epic change = new Epic(created.getName(), created.getDescription());
+        change.setName("2");
+        assertNotEquals(change.getName(), taskManager.getByIdEpic(created.getIdTask()).getName());
+    }
+
+    @Test
+    public void checkImmutabilityOfEpicWhenSourceChanged() {
+        Epic source = new Epic("1", "www");
+        Epic created = new Epic(source.getName(), source.getDescription());
+        taskManager.addEpic(created);
+        source.setName("2");
+        assertNotEquals(source.getName(), taskManager.getByIdEpic(created.getIdTask()).getName());
+    }
+
+    @Test
+    public void checkImmutabilityOfSubtaskWhenCreatedValueChanged() {
+        Epic epic = taskManager.addEpic(new Epic("...", "www"));
+        Subtask created = taskManager.addSubtask(new Subtask("1", "www", Status.NEW, epic.getIdTask()));
+        Subtask change = new Subtask(created.getName(), created.getDescription(), created.getStatus(), created.getIdEpic());
+        change.setName("2");
+        assertNotEquals(change.getName(), taskManager.getByIdSubtask(created.getIdTask()).getName());
+    }
+
+    @Test
+    public void checkImmutabilityOfSubtaskWhenSourceChanged() {
+        Epic epic = taskManager.addEpic(new Epic("...", "www"));
+        Subtask source = new Subtask("1", "www", Status.NEW, epic.getIdTask());
+        Subtask created = new Subtask(source.getName(), source.getDescription(), source.getStatus(), source.getIdEpic());
+        taskManager.addSubtask(created);
+        source.setName("2");
+        assertNotEquals(source.getName(), taskManager.getByIdSubtask(created.getIdTask()).getName());
+    }
 }
 

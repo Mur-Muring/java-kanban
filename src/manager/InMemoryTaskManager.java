@@ -1,4 +1,3 @@
-// Исправила двойное обращение в Мапе в методах поиска по ID
 
 package manager;
 
@@ -25,11 +24,11 @@ public class InMemoryTaskManager implements TaskManager {
     // Создание
     @Override
     public Task addTask(Task task) {
-        if (task!=null) {
+        if (task != null) {
             task.setIdTask(getIdCounter());
             tasks.put(task.getIdTask(), task);
         }
-            return task;
+        return task;
     }
 
     @Override
@@ -110,21 +109,21 @@ public class InMemoryTaskManager implements TaskManager {
     // Получение по ID
     @Override
     public Task getByIdTask(Integer id) {
-        Task task=tasks.get(id);
+        Task task = tasks.get(id);
         historyManager.add(task);
         return task;
     }
 
     @Override
     public Epic getByIdEpic(Integer id) {
-        Epic epic=epics.get(id);
+        Epic epic = epics.get(id);
         historyManager.add(epic);
         return epic;
     }
 
     @Override
     public Subtask getByIdSubtask(Integer id) {
-        Subtask subtask=subtasks.get(id);
+        Subtask subtask = subtasks.get(id);
         historyManager.add(subtask);
         return subtask;
     }
