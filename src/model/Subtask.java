@@ -2,7 +2,7 @@ package model;
 
 import java.util.Objects;
 
-public class Subtask extends Task {// класс с подзадачами
+public class Subtask extends Task {
     private Integer idEpic;
 
     public Subtask(String name, String description, Status status, Integer idEpic) {
