@@ -1,10 +1,5 @@
 /*
--Обновлены тесты taskDoesNotChangeInHistory, epickDoesNotChangeInHistory, subtaskDoesNotChangeInHistory
--Обновлен тест addTaskTest(), он проверяет:
-  - что задачи добавляюся
-  - что при повторном просмотре задачи, предыдущий просмотр удаляется
-  - что при повторном просмотре задача попадает в конец списка
-  - что пустая задача не может попасть
+1. Добавила тесты на порядок задач после удаления из истории
  */
 package manager;
 
@@ -92,6 +87,39 @@ class InMemoryHistoryManagerTest {
         Task taskNull = null;
         historyManager.add(taskNull);
         Assertions.assertEquals(3, historyManager.getHistory().size(), "В историю пробралась пустая задача");
+    }
+
+    @Test
+    public void deleteByIdTest() {
+        Task task1 = new Task("Задача 1", 0, "www");
+        Task task2 = new Task("Задача 2", 1, "www");
+        Task task3 = new Task("Задача 3", 2, "www");
+        Task task4 = new Task("Задача 4", 3, "www");
+        Task task5 = new Task("Задача 5", 4, "www");
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.add(task4);
+        historyManager.add(task5);
+
+        int idDelete = task3.getIdTask();
+        historyManager.remove(idDelete);
+        Assertions.assertEquals(historyManager.getHistory().get(idDelete - 1), task2,
+                "Порядок списка нарушен(удаление из середины");
+        Assertions.assertEquals(historyManager.getHistory().get(idDelete), task4,
+                "Порядок списка нарушен(удаление из середины");
+
+        Assertions.assertEquals(historyManager.getHistory().getFirst(), task1,
+                "Первая добавленная задача не первая в списке");
+        historyManager.remove(task1.getIdTask());
+        Assertions.assertEquals(historyManager.getHistory().getFirst(), task2,
+                "Порядок списка нарушен(удаление из начала");
+
+        Assertions.assertEquals(historyManager.getHistory().getLast(), task5,
+                "Последняя добавленная задача не последняя в списке");
+        historyManager.remove(task5.getIdTask());
+        Assertions.assertEquals(historyManager.getHistory().getLast(), task4,
+                "Порядок списка нарушен(удаление из конца");
     }
 }
 

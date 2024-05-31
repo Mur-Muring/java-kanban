@@ -1,5 +1,9 @@
 
 package manager;
+/*
+1.Добавила во всех методах, связвнных с удалением по id - удалении из истории, реализовала Main, там все работало,
+но сломало мне тесты по удалению по id
+ */
 
 import model.Epic;
 import model.Status;
@@ -153,6 +157,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteByIdTask(Integer id) {
         tasks.remove(id);
+        historyManager.remove(id);
     }
 
     @Override
@@ -160,8 +165,10 @@ public class InMemoryTaskManager implements TaskManager {
         ArrayList<Integer> subtaskIds = epics.get(id).getSubtasks();
         for (Integer subtaskId : subtaskIds) {
             subtasks.remove(subtaskId);
+            historyManager.remove(subtaskId);
         }
         epics.remove(id);
+        historyManager.remove(id);
     }
 
     @Override
@@ -171,6 +178,7 @@ public class InMemoryTaskManager implements TaskManager {
         subtaskIds.remove(id);
         subtasks.remove(id);
         updateStatus(epicId);
+        historyManager.remove(id);
     }
 
     // История

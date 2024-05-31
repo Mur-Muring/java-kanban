@@ -1,11 +1,11 @@
 /*
--Сделать список хранения истории безразмерным
--Сделать класс Node, для узла списка, реализуем здесть, так как он больше нигде не нужен
--Реализовать метод linkLast для добавления задач в двухсвязный список
--Реализовать метод getTasks для того что бы собрать все задачи в обычный список
--Реализовать метод removeNode, удаление по Node
--Реализовать метод remove, удаление из Маp по id
--Реализовать метод добавления в Мар и удаленя при повторе и доб в конец списка
+1. Убрала параметризацию в Node
+2. Лишний пробел устранен
+3. Убрала геттеры у Node
+4. Метод add(Task task) вынесла общее добавлению в мапу, проверку на null НЕ убрала, так как в прошлый раз
+просили добавить в тест проверку на ноль, потому что задача и пустая может быть
+5. В метод removeNode() сделала проверку на null
+6. Сделала тесты добвления, обхода, удаления приватными
  */
 
 package manager;
@@ -23,24 +23,15 @@ public class InMemoryHistoryManager implements HistoryManager {
     private Node<Task> head;
     private Node<Task> tail;
 
+    private static class Node<Task> {
+        public Task task;
+        public Node<Task> prev;
+        public Node<Task> next;
 
-    private static class Node<E> {
-        public E task;
-        public Node<E> prev;
-        public Node<E> next;
-
-        public Node(Node<E> prev, E task, Node<E> next) {
+        public Node(Node<Task> prev, Task task, Node<Task> next) {
             this.task = task;
             this.prev = prev;
             this.next = next;
-        }
-
-        public E getTask() {
-            return task;
-        }
-
-        public Node<E> getNext() {
-            return next;
         }
 
         @Override
@@ -64,11 +55,10 @@ public class InMemoryHistoryManager implements HistoryManager {
             if (tasksHistory.containsKey(idKey)) {
                 remove(idKey);
                 linkLast(task);
-                tasksHistory.put(idKey, tail);
             } else {
                 linkLast(task);
-                tasksHistory.put(idKey, tail);
             }
+            tasksHistory.put(idKey, tail);
         }
     }
 
@@ -82,7 +72,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         return getTasks();
     }
 
-    public void linkLast(Task task) {
+    private void linkLast(Task task) {
         Node<Task> l = this.tail;
         Node<Task> newNode = new Node<>(l, task, null);
         this.tail = newNode;
@@ -93,30 +83,32 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
-    public List<Task> getTasks() {
+    private List<Task> getTasks() {
         List<Task> tasks = new ArrayList<>();
         Node<Task> current = head;
         while (current != null) {
-            tasks.add(current.getTask());
-            current = current.getNext();
+            tasks.add(current.task);
+            current = current.next;
         }
         return tasks;
     }
 
-    public void removeNode(Node<Task> node) {
-        final Node<Task> prev = node.prev;
-        final Node<Task> next = node.next;
-        if (prev == null) {
-            head = next;
-        } else {
-            prev.next = next;
-            node.prev = null;
-        }
-        if (next == null) {
-            tail = prev;
-        } else {
-            next.prev = prev;
-            node.next = null;
+    private void removeNode(Node<Task> node) {
+        if (node != null) {
+            final Node<Task> prev = node.prev;
+            final Node<Task> next = node.next;
+            if (prev == null) {
+                head = next;
+            } else {
+                prev.next = next;
+                node.prev = null;
+            }
+            if (next == null) {
+                tail = prev;
+            } else {
+                next.prev = prev;
+                node.next = null;
+            }
         }
     }
 }

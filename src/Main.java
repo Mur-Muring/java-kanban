@@ -47,7 +47,14 @@ public class Main {
         list = taskManager.getHistory();
         metod.print(list); //повторов нет
 
-        HistoryManager historyManager = new InMemoryHistoryManager();
+        taskManager.deleteByIdTask(task2.getIdTask());
+
+        list = taskManager.getHistory();
+        metod.print(list); // задача исчезла из истории
+
+        taskManager.deleteByIdEpic(epic1.getIdTask());
+        list = taskManager.getHistory();
+        metod.print(list); // подзадачи исчезли вместе с эпиком
 
     }
 
