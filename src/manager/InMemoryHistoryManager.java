@@ -19,16 +19,16 @@ import java.util.Objects;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    private final HashMap<Integer, Node<Task>> tasksHistory = new HashMap<>();
-    private Node<Task> head;
-    private Node<Task> tail;
+    private final HashMap<Integer, Node> tasksHistory = new HashMap<>();
+    private Node head;
+    private Node tail;
 
-    private static class Node<Task> {
+    private static class Node {
         public Task task;
-        public Node<Task> prev;
-        public Node<Task> next;
+        public Node prev;
+        public Node next;
 
-        public Node(Node<Task> prev, Task task, Node<Task> next) {
+        public Node(Node prev, Task task, Node next) {
             this.task = task;
             this.prev = prev;
             this.next = next;
@@ -38,7 +38,7 @@ public class InMemoryHistoryManager implements HistoryManager {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            Node<?> node = (Node<?>) o;
+            Node node = (Node) o;
             return Objects.equals(task, node.task) && Objects.equals(prev, node.prev) && Objects.equals(next, node.next);
         }
 
@@ -73,8 +73,8 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     private void linkLast(Task task) {
-        Node<Task> l = this.tail;
-        Node<Task> newNode = new Node<>(l, task, null);
+        Node l = this.tail;
+        Node newNode = new Node(l, task, null);
         this.tail = newNode;
         if (l == null) {
             this.head = newNode;
@@ -85,7 +85,7 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     private List<Task> getTasks() {
         List<Task> tasks = new ArrayList<>();
-        Node<Task> current = head;
+        Node current = head;
         while (current != null) {
             tasks.add(current.task);
             current = current.next;
@@ -93,10 +93,10 @@ public class InMemoryHistoryManager implements HistoryManager {
         return tasks;
     }
 
-    private void removeNode(Node<Task> node) {
+    private void removeNode(Node node) {
         if (node != null) {
-            final Node<Task> prev = node.prev;
-            final Node<Task> next = node.next;
+            final Node prev = node.prev;
+            final Node next = node.next;
             if (prev == null) {
                 head = next;
             } else {
