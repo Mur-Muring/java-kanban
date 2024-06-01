@@ -1,11 +1,5 @@
 /*
-1. Убрала параметризацию в Node
-2. Лишний пробел устранен
-3. Убрала геттеры у Node
-4. Метод add(Task task) вынесла общее добавлению в мапу, проверку на null НЕ убрала, так как в прошлый раз
-просили добавить в тест проверку на ноль, потому что задача и пустая может быть
-5. В метод removeNode() сделала проверку на null
-6. Сделала тесты добвления, обхода, удаления приватными
+1. Убрала лишнее из add(Task task)
  */
 
 package manager;
@@ -52,12 +46,8 @@ public class InMemoryHistoryManager implements HistoryManager {
     public void add(Task task) {
         if (task != null) {
             int idKey = task.getIdTask();
-            if (tasksHistory.containsKey(idKey)) {
-                remove(idKey);
-                linkLast(task);
-            } else {
-                linkLast(task);
-            }
+            remove(idKey);
+            linkLast(task);
             tasksHistory.put(idKey, tail);
         }
     }

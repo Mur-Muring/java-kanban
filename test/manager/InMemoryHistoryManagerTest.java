@@ -1,5 +1,5 @@
 /*
-1. Добавила тесты на порядок задач после удаления из истории
+1. Исправила тест удаления из середины
  */
 package manager;
 
@@ -104,9 +104,7 @@ class InMemoryHistoryManagerTest {
 
         int idDelete = task3.getIdTask();
         historyManager.remove(idDelete);
-        Assertions.assertEquals(historyManager.getHistory().get(idDelete - 1), task2,
-                "Порядок списка нарушен(удаление из середины");
-        Assertions.assertEquals(historyManager.getHistory().get(idDelete), task4,
+        Assertions.assertEquals(List.of(task1, task2, task4, task5), historyManager.getHistory(),
                 "Порядок списка нарушен(удаление из середины");
 
         Assertions.assertEquals(historyManager.getHistory().getFirst(), task1,

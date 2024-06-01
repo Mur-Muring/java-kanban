@@ -1,6 +1,8 @@
 /*
-1. В результате удаления из истории по id, сломались тесты по удаление, вопрос решился путем вызова (get)
-задач и в результате добавления их в историю
+1. Все работает! Моя ошибка была в том, что добавив в метод удаления историию, я сломала тесты пустой нодой, решение
+как раз было в проверке на null в методе removeNode, а я заставила это работать гетом и только потом добавила проверку в
+removeNode.
+Сейчас я убрала геты и все работает без них.
  */
 package manager;
 
@@ -168,9 +170,6 @@ class InMemoryTaskManagerTest {
         Task task2 = new Task("День", "...");
         taskManager.addTask(task2);
 
-        taskManager.getByIdTask(task1.getIdTask());
-        taskManager.getByIdTask(task2.getIdTask());
-
         taskManager.deleteByIdTask(id);
         int expected = 1;
         int actual = taskManager.getAllTasks().size();
@@ -189,9 +188,6 @@ class InMemoryTaskManagerTest {
         int id = epic1.getIdTask();
         Epic epic2 = new Epic("День", "...");
         taskManager.addEpic(epic2);
-
-        taskManager.getByIdEpic(epic1.getIdTask());
-        taskManager.getByIdEpic(epic2.getIdTask());
 
         taskManager.deleteByIdEpic(id);
         int expected = 1;
@@ -212,9 +208,6 @@ class InMemoryTaskManagerTest {
         taskManager.addSubtask(subtask1);
         Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0);
         taskManager.addSubtask(subtask2);
-
-        taskManager.getByIdSubtask(subtask1.getIdTask());
-        taskManager.getByIdSubtask(subtask2.getIdTask());
 
         Integer idDelete = subtask2.getIdTask();
         ArrayList<Integer> test = epic.getSubtasks();
