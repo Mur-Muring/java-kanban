@@ -38,21 +38,85 @@ public class Main {
         taskManager.getByIdSubtask(subtask1.getIdTask());
         taskManager.getByIdSubtask(subtask2.getIdTask());
 
+        System.out.println("Отобразим историю с 2 задачами, 2 эпиками и 3 эпиками");
         List<Task> list = taskManager.getHistory();
         metod.print(list);
 
+        System.out.println("После повторного просмотра первой задачи, первый просмотр был удален," +
+                " а новый переместился в конец списка");
         taskManager.getByIdTask(task1.getIdTask());
         list = taskManager.getHistory();
         metod.print(list); //повторов нет
 
         taskManager.deleteByIdTask(task2.getIdTask());
-
+        System.out.println("Удалили по Id Задачу 2");
         list = taskManager.getHistory();
         metod.print(list); // задача исчезла из истории
 
         taskManager.deleteByIdEpic(epic1.getIdTask());
+        System.out.println("Удалили по Id Эпик 1, подзадачи исчезли вместе с эпиком");
         list = taskManager.getHistory();
         metod.print(list); // подзадачи исчезли вместе с эпиком
+
+
+        Task task3 = new Task("Задача 3", "...");
+        taskManager.addTask(task3);
+        Task task4 = new Task("Задача 4", "...");
+        taskManager.addTask(task4);
+
+        Epic epic3 = new Epic("Эпик3", "...");
+        taskManager.addEpic(epic3);
+        Subtask subtask4 = new Subtask("Подзадача 3.1", "...", Status.NEW, epic3.getIdTask());
+        Subtask subtask5 = new Subtask("Подзадача 3.2", "...", Status.NEW, epic3.getIdTask());
+        Subtask subtask6 = new Subtask("Подзадача 3.3", "...", Status.NEW, epic3.getIdTask());
+        taskManager.addSubtask(subtask4);
+        taskManager.addSubtask(subtask5);
+        taskManager.addSubtask(subtask6);
+
+        taskManager.getByIdTask(task3.getIdTask());
+        taskManager.getByIdTask(task4.getIdTask());
+        taskManager.getByIdEpic(epic3.getIdTask());
+        taskManager.getByIdSubtask(subtask4.getIdTask());
+        taskManager.getByIdSubtask(subtask5.getIdTask());
+        taskManager.getByIdSubtask(subtask6.getIdTask());
+
+        System.out.println("Наполнили историю новыми задачами, эриками, подзадачами");
+        list = taskManager.getHistory();
+        metod.print(list);
+
+        taskManager.deleteTasks();
+        System.out.println("Удалили все задачи");
+        list = taskManager.getHistory();
+        metod.print(list);
+
+        System.out.println("Удалили все эпики, подзадачи тоже удадились, история пуста");
+        taskManager.deleteEpics();
+        list = taskManager.getHistory();
+        metod.print(list);
+
+        Epic epic4 = new Epic("Эпик4", "...");
+        taskManager.addEpic(epic4);
+        Subtask subtask7 = new Subtask("Подзадача 4.1", "...", Status.NEW, epic4.getIdTask());
+        Subtask subtask8 = new Subtask("Подзадача 4.2", "...", Status.NEW, epic4.getIdTask());
+        Subtask subtask9 = new Subtask("Подзадача 4.3", "...", Status.NEW, epic4.getIdTask());
+        taskManager.addSubtask(subtask7);
+        taskManager.addSubtask(subtask8);
+        taskManager.addSubtask(subtask9);
+
+        taskManager.getByIdEpic(epic4.getIdTask());
+        taskManager.getByIdSubtask(subtask7.getIdTask());
+        taskManager.getByIdSubtask(subtask8.getIdTask());
+        taskManager.getByIdSubtask(subtask9.getIdTask());
+
+        System.out.println("Наполнили историю Эпиком с подзадачами");
+        list = taskManager.getHistory();
+        metod.print(list);
+
+        System.out.println("Удалили подзадачи");
+        taskManager.deleteSubtasks();
+        list = taskManager.getHistory();
+        metod.print(list);
+
 
     }
 
