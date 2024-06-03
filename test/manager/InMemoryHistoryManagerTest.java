@@ -1,7 +1,6 @@
-// Переделала тест на проверку не более 10 историй. Спасибо, Ваш вариант гораздо лучше.
-// Проверку на null вынесла в отельный тест, возможно это повляет на вреся обработки,но мы еще не проходили
-// и надеюсь это не будет ошибкой
-
+/*
+1. Исправила тест удаления из середины
+ */
 package manager;
 
 import model.Epic;
@@ -11,6 +10,8 @@ import model.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 
 class InMemoryHistoryManagerTest {
@@ -31,8 +32,10 @@ class InMemoryHistoryManagerTest {
         task.setName("Измененная задача");
         manager.updateTask(task);
 
-        Assertions.assertNotEquals(manager.getHistory().getFirst().getName(),
-                manager.getByIdTask(task.getIdTask()).getName());
+        List<Task> history = historyManager.getHistory();
+        for (Task historyTask : history) {
+            Assertions.assertNotEquals(manager.getByIdTask(task.getIdTask()).getName(), historyTask.getName());
+        }
     }
 
     @Test
@@ -42,8 +45,10 @@ class InMemoryHistoryManagerTest {
         epic.setName("Измененное имя");
         manager.updateEpic(epic);
 
-        Assertions.assertNotEquals(manager.getHistory().getFirst().getName(),
-                manager.getByIdEpic(epic.getIdTask()).getName());
+        List<Task> history = historyManager.getHistory();
+        for (Task historyTask : history) {
+            Assertions.assertNotEquals(manager.getByIdEpic(epic.getIdTask()).getName(), historyTask.getName());
+        }
     }
 
     @Test
@@ -54,25 +59,65 @@ class InMemoryHistoryManagerTest {
         subtask.setName("Новое имя");
         manager.updateSubtask(subtask);
 
-        Assertions.assertNotEquals(manager.getHistory().getFirst().getName(),
-                manager.getByIdSubtask(subtask.getIdTask()).getName());
+        List<Task> history = historyManager.getHistory();
+        for (Task historyTask : history) {
+            Assertions.assertNotEquals(manager.getByIdSubtask(subtask.getIdTask()).getName(), historyTask.getName());
+        }
     }
 
     @Test
     public void addTaskTest() {
-        for (int i = 0; i < 11; i++) {
-            historyManager.add(new Task("...", "..."));
-        }
-        Assertions.assertEquals(10, historyManager.getHistory().size(), "В истории храниться больше 10 позтций");
+        Task task1 = new Task("1", 0, "www");
+        Task task2 = new Task("2", 1, "www");
+        Task task3 = new Task("3", 2, "www");
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+
+        Assertions.assertEquals(3, historyManager.getHistory().size(), "Не все задачи попали в историю");
+
+        task2.setDescription("eeee");
+        historyManager.add(task2);
+
+        Assertions.assertEquals(3, historyManager.getHistory().size(), "Предыдущий просмотр задачи не был удален");
+
+        Task last = historyManager.getHistory().getLast();
+        Assertions.assertEquals(last, task2, "Задача после повторного добавления не ушла в конец списка");
+
+        Task taskNull = null;
+        historyManager.add(taskNull);
+        Assertions.assertEquals(3, historyManager.getHistory().size(), "В историю пробралась пустая задача");
     }
 
     @Test
-    public void addTaskNullTest() {
-        for (int i = 0; i < 4; i++) {
-            historyManager.add(new Task("...", "..."));
-        }
-        Task taskNull = null;
-        historyManager.add(taskNull);
-        Assertions.assertEquals(4, historyManager.getHistory().size(), "В историю пробралась пустая задача");
+    public void deleteByIdTest() {
+        Task task1 = new Task("Задача 1", 0, "www");
+        Task task2 = new Task("Задача 2", 1, "www");
+        Task task3 = new Task("Задача 3", 2, "www");
+        Task task4 = new Task("Задача 4", 3, "www");
+        Task task5 = new Task("Задача 5", 4, "www");
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+        historyManager.add(task4);
+        historyManager.add(task5);
+
+        int idDelete = task3.getIdTask();
+        historyManager.remove(idDelete);
+        Assertions.assertEquals(List.of(task1, task2, task4, task5), historyManager.getHistory(),
+                "Порядок списка нарушен(удаление из середины");
+
+        Assertions.assertEquals(historyManager.getHistory().getFirst(), task1,
+                "Первая добавленная задача не первая в списке");
+        historyManager.remove(task1.getIdTask());
+        Assertions.assertEquals(List.of(task2, task4, task5), historyManager.getHistory(),
+                "Порядок списка нарушен(удаление из начала");
+
+        Assertions.assertEquals(historyManager.getHistory().getLast(), task5,
+                "Последняя добавленная задача не последняя в списке");
+        historyManager.remove(task5.getIdTask());
+        Assertions.assertEquals(List.of(task2, task4), historyManager.getHistory(),
+                "Порядок списка нарушен(удаление из конца");
     }
 }
+

@@ -2,7 +2,7 @@ package model;
 
 import java.util.Objects;
 
-public class Task {// класс с задачами
+public class Task {
     private String name;
     private Integer id;
     private String description;
