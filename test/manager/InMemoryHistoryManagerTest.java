@@ -110,13 +110,13 @@ class InMemoryHistoryManagerTest {
         Assertions.assertEquals(historyManager.getHistory().getFirst(), task1,
                 "Первая добавленная задача не первая в списке");
         historyManager.remove(task1.getIdTask());
-        Assertions.assertEquals(historyManager.getHistory().getFirst(), task2,
+        Assertions.assertEquals(List.of(task2, task4, task5), historyManager.getHistory(),
                 "Порядок списка нарушен(удаление из начала");
 
         Assertions.assertEquals(historyManager.getHistory().getLast(), task5,
                 "Последняя добавленная задача не последняя в списке");
         historyManager.remove(task5.getIdTask());
-        Assertions.assertEquals(historyManager.getHistory().getLast(), task4,
+        Assertions.assertEquals(List.of(task2, task4), historyManager.getHistory(),
                 "Порядок списка нарушен(удаление из конца");
     }
 }
