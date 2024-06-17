@@ -15,7 +15,7 @@ public class Subtask extends Task {
         return idEpic;
     }
 
-    public TypeOfTask getTypeOfTask(){
+    public TypeOfTask getTypeOfTask() {
         return TypeOfTask.SUBTASK;
     }
 
