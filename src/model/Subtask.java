@@ -15,6 +15,10 @@ public class Subtask extends Task {
         return idEpic;
     }
 
+    public TypeOfTask getTypeOfTask(){
+        return TypeOfTask.SUBTASK;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,10 +1,8 @@
 package exception;
+// наследование от RuntimeException и сами передаем тект исключения
 
-import java.io.IOError;
-
-public class ManagerSaveException extends IOError {
-
-    public ManagerSaveException(Throwable message) {
+public class ManagerSaveException extends RuntimeException {
+    public ManagerSaveException(String message) {
         super(message);
     }
 }

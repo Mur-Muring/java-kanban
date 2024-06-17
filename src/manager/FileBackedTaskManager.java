@@ -1,44 +1,50 @@
 package manager;
+/*
+1. название статик переменной большими буквами (строка 19)
+2. Убрала save() из конструктора
+3. Переименнова переменные в методах add..()
+4. Удалила методы getAll...().
+5. Методы в строку/из строки перенесла в утилитарный класс toEnum
+6. В методе loadFromFile() заменила использование addTask на добавление в мапу
+7. Поменяла текст сообщения собственного исключения
+8. save() теперь приватный и переместила его вниз после публичных
+ */
 
 import exception.ManagerSaveException;
 import model.*;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final File file;
-    private static final String title = "id,type,name,status,description,epic";
+    private static final String TITLE = "id,type,name,status,description,epic";
 
     public FileBackedTaskManager(File file) {
         this.file = file;
-        save();
     }
 
     @Override
     public Task addTask(Task task) {
-        Task task1 = super.addTask(task);
+        Task taskSave = super.addTask(task);
         save();
-        return task1;
+        return taskSave;
     }
 
     @Override
     public Epic addEpic(Epic epic) {
-        Epic epic1 = super.addEpic(epic);
+        Epic epicSave = super.addEpic(epic);
         save();
-        return epic1;
+        return epicSave;
     }
 
     @Override
     public Subtask addSubtask(Subtask subtask) {
-        Subtask subtask1 = super.addSubtask(subtask);
+        Subtask subtaskSave = super.addSubtask(subtask);
         save();
-        return subtask1;
+        return subtaskSave;
     }
 
     @Override
@@ -95,45 +101,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         save();
     }
 
-    @Override
-    public ArrayList<Task> getAllTasks() {
-        save();
-        return super.getAllTasks();
-    }
-
-    @Override
-    public ArrayList<Epic> getAllEpics() {
-        save();
-        return super.getAllEpics();
-    }
-
-    @Override
-    public ArrayList<Subtask> getAllSubtasks() {
-        save();
-        return super.getAllSubtasks();
-    }
-
-    public void save() {
-        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Paths.get(file.toURI()), StandardCharsets.UTF_8)) {
-            bufferedWriter.write(title);
-
-            for (Task task : tasks.values()) {
-                String newString = toString(task);
-                bufferedWriter.write(String.format("\n%s", newString));
-            }
-            for (Epic epic : epics.values()) {
-                String newString = toString(epic);
-                bufferedWriter.write(String.format("\n%s", newString));
-            }
-            for (Subtask subtask : subtasks.values()) {
-                String newString = toString(subtask);
-                bufferedWriter.write(String.format("\n%s", newString));
-            }
-        } catch (IOException e) {
-            throw new ManagerSaveException(e);
-        }
-    }
-
     public static FileBackedTaskManager loadFromFile(File file) {
         try {
 
@@ -142,88 +109,49 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
 
             for (String taskString : lines) {
-                if (taskString.equals(title) || taskString.isBlank()) {
+                if (taskString.equals(TITLE) || taskString.isBlank()) {
                     continue;
                 }
-                Task task = fromString(taskString);
-                TypeOfTask typeOfTask = toEnum(task);
+                Task task = Utils.fromString(taskString);
+                TypeOfTask typeOfTask = Utils.toEnum(task);
 
                 switch (typeOfTask) {
-                    case TASK -> fileBackedTaskManager.addTask(task);
-                    case EPIC -> fileBackedTaskManager.addEpic((Epic) task);
-                    case SUBTASK -> fileBackedTaskManager.addSubtask((Subtask) task);
+                    case TASK -> fileBackedTaskManager.tasks.put(task.getIdTask(), task);
+                    case EPIC -> fileBackedTaskManager.epics.put(task.getIdTask(), (Epic) task);
+                    case SUBTASK -> {
+                        fileBackedTaskManager.subtasks.put(task.getIdTask(), (Subtask) task);
+                        Subtask subTask = (Subtask) task;
+                        Epic epic = fileBackedTaskManager.epics.get(subTask.getIdEpic());
+                        epic.addSubTask(subTask);
+                    }
                     default -> throw new IllegalStateException("Неверное значение: " + typeOfTask);
                 }
             }
             return fileBackedTaskManager;
         } catch (IOException e) {
-            throw new ManagerSaveException(e);
+            throw new ManagerSaveException("Ошибка восстановления из файла");
         }
     }
 
-    private static String toString(Task task) {
-        TypeOfTask typeOfTask = toEnum(task);
-        switch (typeOfTask) {
-            case TASK, EPIC -> {
-                return String.format("%d,%s,%s,%s,%s,", task.getIdTask(), typeOfTask, task.getName(), task.getStatus(),
-                        task.getDescription());
+    private void save() {
+        try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Paths.get(file.toURI()), StandardCharsets.UTF_8)) {
+            bufferedWriter.write(TITLE);
+
+            for (Task task : tasks.values()) {
+                String newString = Utils.toString(task);
+                bufferedWriter.write(String.format("\n%s", newString));
             }
-            case SUBTASK -> {
-                Subtask subTask = (Subtask) task;
-                return String.format("%d,%s,%s,%s,%s,%d", subTask.getIdTask(), typeOfTask, subTask.getName(),
-                        subTask.getStatus(), subTask.getDescription(), subTask.getIdEpic());
+            for (Epic epic : epics.values()) {
+                String newString = Utils.toString(epic);
+                bufferedWriter.write(String.format("\n%s", newString));
             }
+            for (Subtask subtask : subtasks.values()) {
+                String newString = Utils.toString(subtask);
+                bufferedWriter.write(String.format("\n%s", newString));
+            }
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка сохранения в файл");
         }
-
-        throw new IllegalStateException("Неверный тип задач: " + typeOfTask);
-    }
-
-    private static TypeOfTask toEnum(Task task) {
-        if (task instanceof Epic) {
-            return TypeOfTask.EPIC;
-        } else if (task instanceof Subtask) {
-            return TypeOfTask.SUBTASK;
-        }
-        return TypeOfTask.TASK;
-    }
-
-    private static Task fromString(String value) {
-        String[] strings = value.split(",");
-        int id = Integer.parseInt(strings[0]);
-        TypeOfTask typeOfTask = TypeOfTask.valueOf(strings[1]);
-        String name = strings[2];
-        Status status = statusFromString(strings[3]);
-        String description = strings[4];
-
-        switch (typeOfTask) {
-            case TASK -> {
-                Task task = new Task(name, description, status);
-                task.setIdTask(id);
-                return task;
-            }
-            case EPIC -> {
-                Epic epic = new Epic(name, description);
-                epic.setIdTask(id);
-                epic.setStatus(status);
-                return epic;
-            }
-            case SUBTASK -> {
-                int idEpic = Integer.parseInt(strings[5]);
-                Subtask subtask = new Subtask(name, description, status, idEpic);
-                subtask.setIdTask(id);
-                return subtask;
-            }
-            default -> throw new IllegalStateException("Неверное значение: " + typeOfTask);
-        }
-    }
-
-    private static Status statusFromString(String string) {
-        return switch (string) {
-            case "NEW" -> Status.NEW;
-            case "IN_PROGRESS" -> Status.IN_PROGRESS;
-            case "DONE" -> Status.DONE;
-            default -> throw new IllegalStateException("Неверное значение: " + string);
-        };
     }
 
     public static void main(String[] args) {
@@ -242,6 +170,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask());
         fileManager1.addSubtask(subtask1);
         fileManager1.addSubtask(subtask2);
+        Epic epic2 = new Epic("Эпик2", "Описание 2");
+        fileManager1.addEpic(epic2);
 
         FileBackedTaskManager fileManager2 = FileBackedTaskManager.loadFromFile(fileTest);
 

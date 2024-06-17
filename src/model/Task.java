@@ -72,6 +72,10 @@ public class Task {
         this.status = status;
     }
 
+    public TypeOfTask getTypeOfTask(){
+        return TypeOfTask.TASK;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

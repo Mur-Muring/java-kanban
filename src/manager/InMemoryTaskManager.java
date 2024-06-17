@@ -11,7 +11,7 @@ import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    private Integer idCounter = 0;
+    protected Integer idCounter = 0;
 
     HistoryManager historyManager = Managers.getDefaultHistory();
 
