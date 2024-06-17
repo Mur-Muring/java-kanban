@@ -1,6 +1,6 @@
 package manager;
 /*
-Добавила тест на сохранение и восстановления разных типов задач из файла
+Переименовала переменные названия менеджеров
  */
 
 import model.Epic;
@@ -49,26 +49,26 @@ public class FileBackedTaskManagerTest {
     void savingTasksTest() {
         try {
             File file = File.createTempFile("test", "csv");
-            FileBackedTaskManager fileManager1 = new FileBackedTaskManager(file);
+            FileBackedTaskManager fileManagerSave = new FileBackedTaskManager(file);
 
             Task task1 = new Task("Задача 1", "Описание 1");
-            fileManager1.addTask(task1);
+            fileManagerSave.addTask(task1);
             Task task2 = new Task("Задача 2", "Описание 2");
-            fileManager1.addTask(task2);
+            fileManagerSave.addTask(task2);
             Epic epic1 = new Epic("Эпик1", "Описание 1");
-            fileManager1.addEpic(epic1);
+            fileManagerSave.addEpic(epic1);
             Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask());
             Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask());
-            fileManager1.addSubtask(subtask1);
-            fileManager1.addSubtask(subtask2);
+            fileManagerSave.addSubtask(subtask1);
+            fileManagerSave.addSubtask(subtask2);
 
-            FileBackedTaskManager fileManager2 = FileBackedTaskManager.loadFromFile(file);
+            FileBackedTaskManager fileManagerLoad = FileBackedTaskManager.loadFromFile(file);
 
-            Assertions.assertEquals(fileManager1.getAllTasks(), fileManager2.getAllTasks(),
+            Assertions.assertEquals(fileManagerSave.getAllTasks(), fileManagerLoad.getAllTasks(),
                     "Ошибка востановления задач");
-            Assertions.assertEquals(fileManager1.getAllEpics(), fileManager2.getAllEpics(),
+            Assertions.assertEquals(fileManagerSave.getAllEpics(), fileManagerLoad.getAllEpics(),
                     "Ошибка востановления эпиков");
-            Assertions.assertEquals(fileManager2.getAllSubtasks(), fileManager2.getAllSubtasks(),
+            Assertions.assertEquals(fileManagerSave.getAllSubtasks(), fileManagerLoad.getAllSubtasks(),
                     "Ошибка востановления подзадач");
         } catch (IOException e) {
             throw new RuntimeException(e);

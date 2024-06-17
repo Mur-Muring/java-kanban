@@ -113,9 +113,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     continue;
                 }
                 Task task = Utils.fromString(taskString);
-                TypeOfTask typeOfTask = Utils.toEnum(task);
 
-                switch (typeOfTask) {
+                switch (task.getTypeOfTask()) {
                     case TASK -> fileBackedTaskManager.tasks.put(task.getIdTask(), task);
                     case EPIC -> fileBackedTaskManager.epics.put(task.getIdTask(), (Epic) task);
                     case SUBTASK -> {
@@ -124,7 +123,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         Epic epic = fileBackedTaskManager.epics.get(subTask.getIdEpic());
                         epic.addSubTask(subTask);
                     }
-                    default -> throw new IllegalStateException("Неверное значение: " + typeOfTask);
+                    default -> throw new IllegalStateException("Неверное значение");
                 }
             }
             return fileBackedTaskManager;
@@ -172,6 +171,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         fileManager1.addSubtask(subtask2);
         Epic epic2 = new Epic("Эпик2", "Описание 2");
         fileManager1.addEpic(epic2);
+        Task task3 = new Task("Задача 3", "Описание 3");
+        fileManager1.addTask(task3);
 
         FileBackedTaskManager fileManager2 = FileBackedTaskManager.loadFromFile(fileTest);
 

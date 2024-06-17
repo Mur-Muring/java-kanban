@@ -1,33 +1,13 @@
 package manager;
-// 1. в методе toEnum заменила instanceof на геттеры их классов задач
-// 2. Убрала лишний метод определения статуса
+// 1. убрала toEnum
+// 2. Добавила в Task и Epic классы зашлушки и в результате получилас такой toString
 
 import model.*;
 
 public class Utils {
     static String toString(Task task) {
-        TypeOfTask typeOfTask = toEnum(task);
-        switch (typeOfTask) {
-            case TASK, EPIC -> {
-                return String.format("%d,%s,%s,%s,%s,", task.getIdTask(), typeOfTask, task.getName(), task.getStatus(),
-                        task.getDescription());
-            }
-            case SUBTASK -> {
-                Subtask subTask = (Subtask) task;
-                return String.format("%d,%s,%s,%s,%s,%d", subTask.getIdTask(), typeOfTask, subTask.getName(),
-                        subTask.getStatus(), subTask.getDescription(), subTask.getIdEpic());
-            }
-        }
-        throw new IllegalStateException("Неверный тип задач: " + typeOfTask);
-    }
-
-    static TypeOfTask toEnum(Task task) {
-        if (task.getTypeOfTask().equals(TypeOfTask.EPIC)) {
-            return TypeOfTask.EPIC;
-        } else if (task.getTypeOfTask().equals(TypeOfTask.SUBTASK)) {
-            return TypeOfTask.SUBTASK;
-        }
-        return TypeOfTask.TASK;
+        return String.format("%d,%s,%s,%s,%s,%d", task.getIdTask(), task.getTypeOfTask(), task.getName(),
+                task.getStatus(), task.getDescription(), task.getIdEpic());
     }
 
     static Task fromString(String value) {
