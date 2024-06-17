@@ -72,7 +72,7 @@ public class Task {
         this.status = status;
     }
 
-    public TypeOfTask getTypeOfTask(){
+    public TypeOfTask getTypeOfTask() {
         return TypeOfTask.TASK;
     }
 
