@@ -14,6 +14,19 @@ public class Epic extends Task { // класс с эпиками
         return subtasks;
     }
 
+    public void addSubTask(Subtask subtask) {
+        int id = subtask.getIdTask();
+        this.subtasks.add(id);
+    }
+
+    public TypeOfTask getTypeOfTask() {
+        return TypeOfTask.EPIC;
+    }
+
+    public Integer getIdEpic() {
+        return null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

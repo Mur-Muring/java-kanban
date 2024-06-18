@@ -72,6 +72,14 @@ public class Task {
         this.status = status;
     }
 
+    public TypeOfTask getTypeOfTask() {
+        return TypeOfTask.TASK;
+    }
+
+    public Integer getIdEpic() {
+        return null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
