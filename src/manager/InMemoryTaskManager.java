@@ -2,6 +2,7 @@ package manager;
 /*
 1. При добавлении задач и подзадач учитывает время и продолжительность
 2. Пересчитваает эти параметры для эпика в зависимости от подзадач при добвалении подзадач или удалении
+3. Создала множество уникальных задач отсортированных по времени, задачу нельзя добавить, если отсуствует дата
  */
 
 import model.Epic;
@@ -24,7 +25,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
 
-    private final TreeSet<Task> prioritizedTasks = new TreeSet<>();
+    private final TreeSet<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
 
     // Создание
     @Override
@@ -32,6 +33,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (task != null) {
             task.setIdTask(getIdCounter());
             tasks.put(task.getIdTask(), task);
+            updatePrioritizedTasks();
         }
         return task;
     }
@@ -64,6 +66,8 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epic.setDuration(epic.getDuration().plus(subtask.getDuration()));
 
+        updatePrioritizedTasks();
+
         return subtask;
     }
 
@@ -72,6 +76,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         if (tasks.get(task.getIdTask()) != null) {
             tasks.put(task.getIdTask(), task);
+            updatePrioritizedTasks();
         }
     }
 
@@ -91,6 +96,7 @@ public class InMemoryTaskManager implements TaskManager {
             subtasks.put(subtask.getIdTask(), subtask);
             int epicId = subtasks.get(subtask.getIdTask()).getIdEpic();
             updateStatus(epicId);
+            updatePrioritizedTasks();
         }
     }
 
@@ -149,6 +155,7 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.remove(id);
         }
         tasks.clear();
+        updatePrioritizedTasks();
     }
 
     @Override
@@ -161,6 +168,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         subtasks.clear();
         epics.clear();
+        updatePrioritizedTasks();
     }
 
     @Override
@@ -176,6 +184,7 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.remove(id);
         }
         subtasks.clear();
+        updatePrioritizedTasks();
     }
 
     //Удаление по ID
@@ -183,6 +192,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteByIdTask(Integer id) {
         tasks.remove(id);
         historyManager.remove(id);
+        updatePrioritizedTasks();
     }
 
     @Override
@@ -222,6 +232,7 @@ public class InMemoryTaskManager implements TaskManager {
             Optional<Subtask> maxTimeSubtask=subtaskList.stream().max(comparator);
             maxTimeSubtask.ifPresent(subtask -> epic.setEndTime(subtask.getStartTime().plus(subtask.getDuration())));
         }
+        updatePrioritizedTasks();
     }
 
     // История
@@ -237,18 +248,21 @@ public class InMemoryTaskManager implements TaskManager {
         return idCounter++;
     }
 
-   private void getPrioritizedTasks(){
+    //Приоритетность задач
+   @Override
+   public List<Task> getPrioritizedTasks(){
+        return prioritizedTasks.stream().toList();
+    }
+
+   private void updatePrioritizedTasks(){
    prioritizedTasks.clear();
-   for (Task task:tasks.values()){
-       if (task.getStartTime().toLocalDate()!=null){
-           prioritizedTasks.add(task);
-       }
-   }
-   for (Subtask subtask:subtasks.values()){
-       if (subtask.getStartTime().toLocalDate()!=null){
-           prioritizedTasks.add(subtask);
-       }
-   }
+   prioritizedTasks.addAll(tasks.values().stream()
+           .filter(task -> task.getStartTime().toLocalDate()!=null)
+           .toList());
+
+   prioritizedTasks.addAll(subtasks.values().stream()
+           .filter(subtask -> subtask.getStartTime().toLocalDate()!=null)
+           .toList());
    }
 
     private void updateStatus(int idEpic) {

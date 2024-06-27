@@ -54,4 +54,7 @@ public interface TaskManager {
     void deleteByIdSubtask(Integer id);
 
     List<Task> getHistory();
+
+    //Приоритетность задач
+    List<Task> getPrioritizedTasks();
 }

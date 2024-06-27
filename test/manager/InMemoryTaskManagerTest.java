@@ -8,6 +8,7 @@ package manager;
 /*
 1. Обновила методы, проверила как сохраняктся время и продолжительность для задач, и как пересчитывается для
 эпиков при удалении подзадач
+2. Добавила тест на проверку сортировки задач и подзадач по времени
  */
 
 import model.Epic;
@@ -321,6 +322,48 @@ class InMemoryTaskManagerTest {
         taskManager.addSubtask(created);
         source.setName("2");
         assertNotEquals(source.getName(), taskManager.getByIdSubtask(created.getIdTask()).getName());
+    }
+
+    // тест на сортровку по времени и добавления уникальных задач и позадач
+    @Test
+    public void prioritizedTaskTest(){
+        //Я помню, что использовать цифры в названии переменных дурной тон, но это был способ не запутаться в очередности самой
+        Task task3 = new Task("Кот", 0, "...",LocalDateTime.of(2024,12,31,14,50), Duration.ofMinutes(25));
+        taskManager.addTask(task3);
+        Task task1= new Task("Собака", "...",LocalDateTime.of(2024,4,13,11,50), Duration.ofMinutes(2));
+        taskManager.addTask(task1);
+        Epic epic=new Epic("...","...");
+        taskManager.addEpic(epic);
+        Subtask subtask2=new Subtask("Хомяк","...", Status.NEW,epic.getIdTask(),LocalDateTime.of(2024,12,31,9,12),Duration.ofMinutes(22));
+        taskManager.addSubtask(subtask2);
+
+        List<Task> expected=new ArrayList<>();
+        expected.add(task1);
+        expected.add(subtask2);
+        expected.add(task3);
+
+        List<Task> sortTasks=taskManager.getPrioritizedTasks();
+        assertEquals(expected,sortTasks,"Ошибка сортировки при добавлении задач");
+
+        taskManager.deleteByIdTask(task1.getIdTask());
+        sortTasks=taskManager.getPrioritizedTasks();
+        expected.removeFirst();
+        assertEquals(expected,sortTasks,"Ошибка сортировки при удалении задач по Id");
+
+        taskManager.deleteEpics();
+        sortTasks=taskManager.getPrioritizedTasks();
+        expected.removeFirst();
+        assertEquals(expected,sortTasks,"Ошибка сохранения подзадач при удалении всех эпиков");
+
+        Epic epic2=new Epic("...","...");
+        taskManager.addEpic(epic2);
+        Subtask subtask1=new Subtask("Хомяк","...", Status.NEW,epic2.getIdTask(),LocalDateTime.of(2024,1,9,9,7),Duration.ofMinutes(22));
+        taskManager.addSubtask(subtask1);
+
+        expected.addFirst(subtask1);
+        taskManager.deleteByIdEpic(epic2.getIdTask());
+        sortTasks=taskManager.getPrioritizedTasks();
+        assertEquals(expected,sortTasks,"Ошибка сохранения подзадач при удалени эпиков по id");
     }
 }
 
