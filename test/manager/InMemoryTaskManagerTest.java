@@ -5,7 +5,10 @@ removeNode.
 Сейчас я убрала геты и все работает без них.
  */
 package manager;
-
+/*
+1. Обновила методы, проверила как сохраняктся время и продолжительность для задач, и как пересчитывается для
+эпиков при удалении подзадач
+ */
 
 import model.Epic;
 import model.Status;
@@ -15,11 +18,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class InMemoryTaskManagerTest {
     private TaskManager taskManager;
@@ -34,14 +38,14 @@ class InMemoryTaskManagerTest {
     //Проверяем, что объект Subtask нельзя сделать своим же эпиком
     @Test
     public void subtaskCanNotBeEpic() {
-        Subtask subtask = new Subtask("Подзадача", "...", Status.NEW, 1);
+        Subtask subtask = new Subtask("Подзадача", "...", Status.NEW, 1, LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
         assertNull(subtask.getIdTask());
     }
 
     //Проверяем, что InMemoryTaskManager действительно добавляет задачи разного типа и может найти их по id
     @Test
     public void addNewTask() {
-        Task task = new Task("Понедельник", "день тяжелый");
+        Task task = new Task("Понедельник", "день тяжелый",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(task);
         int id = task.getIdTask();
         Task taskSave = taskManager.getByIdTask(id);
@@ -75,7 +79,7 @@ class InMemoryTaskManagerTest {
     public void addNewSubtask() {
         Epic epic = new Epic("Четверг", "маленькая пятница");
         taskManager.addEpic(epic);
-        Subtask subtask = new Subtask("утро", "проснуться", Status.IN_PROGRESS, epic.getIdTask());
+        Subtask subtask = new Subtask("утро", "проснуться", Status.IN_PROGRESS, epic.getIdTask(),LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask);
         int id = subtask.getIdTask();
         Subtask subtaskSave = taskManager.getByIdSubtask(id);
@@ -93,9 +97,9 @@ class InMemoryTaskManagerTest {
     // даже если пользователь по ошибке воспользуется конструктором с id, в мапу он пойдет с сгенирирвоанным id
     @Test
     public void noConflictBetweenTasksWithGeneratedAndPreassignedIDs() {
-        Task taskPreassigned = new Task("Кот", 0, "...");
+        Task taskPreassigned = new Task("Кот", 0, "...",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(taskPreassigned);
-        Task taskGenerate = new Task("Собака", "...");
+        Task taskGenerate = new Task("Собака", "...",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(taskGenerate);
 
         int idTaskPreassigned = taskPreassigned.getIdTask();
@@ -110,7 +114,7 @@ class InMemoryTaskManagerTest {
     //Проверяется неизменность задачи (по всем полям) при добавлении задачи в менеджер
     @Test
     public void constancyOfTheTaskAfterAddManager() {
-        Task task = new Task("Понедельник", "день тяжелый");
+        Task task = new Task("Понедельник", "день тяжелый",LocalDateTime.of(2024,4,13,11,50), Duration.ofMinutes(2));
         taskManager.addTask(task);
         String name = "Понедельник";
         String nameAfter = task.getName();
@@ -120,19 +124,27 @@ class InMemoryTaskManagerTest {
         int idAfter = task.getIdTask();
         Status status = Status.NEW;
         Status statusAfter = task.getStatus();
+        LocalDateTime startTime=LocalDateTime.of(2024,4,13,11,50);
+        LocalDateTime startTimeAfter=task.getStartTime();
+        Duration duration=Duration.ofMinutes(2);
+        Duration durationAfter=task.getDuration();
 
         assertEquals(name, nameAfter, "Имена задач не совпадают");
         assertEquals(description, descriptionAfter, "Описание задач не совпадают");
         assertEquals(id, idAfter, "ID задач не совпадают");
         assertEquals(status, statusAfter, "Статус задач не совпадают");
+    assertEquals(startTime,startTimeAfter,"Старт задач не совпадает");
+        assertEquals(duration,durationAfter,"Продолжительность задач не совпадает");
+
+
     }
 
     // Проверяем, что задачи обновляются
     @Test
     public void updateTaskTest() {
-        Task task = new Task("Ночь", "...");
+        Task task = new Task("Ночь", "...",LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
         taskManager.addTask(task);
-        task = new Task("День", "...");
+        task = new Task("День", "...",LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
         taskManager.updateTask(task);
 
         assertNotNull(task, "Задача пустая");
@@ -152,9 +164,11 @@ class InMemoryTaskManagerTest {
 
     @Test
     public void updateSubtaskTest() {
-        Subtask subtask = new Subtask("...", "...", Status.IN_PROGRESS, 1);
+        Subtask subtask = new Subtask("...", "...", Status.IN_PROGRESS, 1,
+                LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask);
-        subtask = new Subtask("...", "...", Status.DONE, 1);
+        subtask = new Subtask("...", "...", Status.DONE, 1,
+                LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
         taskManager.updateSubtask(subtask);
 
         assertNotNull(subtask, "Задача пустая");
@@ -164,10 +178,10 @@ class InMemoryTaskManagerTest {
     // Проверяем, что задачи удаляются
     @Test
     public void deleteTaskTest() {
-        Task task1 = new Task("Ночь", "...");
+        Task task1 = new Task("Ночь", "...",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(task1);
         int id = task1.getIdTask();
-        Task task2 = new Task("День", "...");
+        Task task2 = new Task("День", "...",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(task2);
 
         taskManager.deleteByIdTask(id);
@@ -204,9 +218,9 @@ class InMemoryTaskManagerTest {
     public void deleteSubtaskTest() {
         Epic epic = new Epic("Ночь", "...");
         taskManager.addEpic(epic);
-        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0);
+        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0,LocalDateTime.of(2024,4,13,11,50), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask1);
-        Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0);
+        Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0,LocalDateTime.of(2024,4,13,14,54), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask2);
 
         Integer idDelete = subtask2.getIdTask();
@@ -214,10 +228,17 @@ class InMemoryTaskManagerTest {
         boolean idInSubtaskList = test.contains(idDelete);
         assertTrue(idInSubtaskList, "Id подзадачи, которая будет удалена изначально не добавилась в список");
 
+        assertEquals(subtask2.getStartTime().plus(subtask2.getDuration()),epic.getEndTime(),
+                "Время окончания выполнения эпика не обновилось при добавлении подзадач");
+
         taskManager.deleteByIdSubtask(subtask2.getIdTask());
         int expected = 1;
         int actual = taskManager.getAllSubtasks().size();
         assertEquals(expected, actual, "Задача по ID не удалена");
+        assertEquals(subtask1.getStartTime().plus(subtask1.getDuration()), epic.getEndTime(),
+                "Время окончания выполнения эпика не обновилось при удалении подзадачи");
+        assertEquals(subtask1.getDuration(), epic.getDuration(),
+                "Продолжительность выполнения эпика не обновилось при удалении подзадачи");
 
         ArrayList<Integer> test2 = epic.getSubtasks();
         boolean idInSubtaskList2 = test2.contains(idDelete);
@@ -227,6 +248,8 @@ class InMemoryTaskManagerTest {
         int expected2 = 0;
         int actual2 = taskManager.getAllSubtasks().size();
         assertEquals(expected2, actual2, "Все задачи не удалены");
+        assertNull(epic.getStartTime(),"При удалении всех подзадач, сохраняется стартовое время эпика");
+        assertEquals(Duration.ZERO, epic.getDuration(), "При удалении всех подзадач, сохраняется продолжительность эпика");
     }
 
     @Test
@@ -234,9 +257,9 @@ class InMemoryTaskManagerTest {
         Epic epic = new Epic("Ночь", "...");
         taskManager.addEpic(epic);
         Status status1 = epic.getStatus();
-        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0);
+        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0,LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask1);
-        Subtask subtask2 = new Subtask("...", "...", Status.DONE, 0);
+        Subtask subtask2 = new Subtask("...", "...", Status.DONE, 0,LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask2);
         Status status2 = epic.getStatus();
 
@@ -246,7 +269,7 @@ class InMemoryTaskManagerTest {
     // Проверяем вляет ли setter на работу менеджера
     @Test
     public void checkImmutabilityOfTaskWhenCreatedValueChanged() {
-        Task created = taskManager.addTask(new Task("1", "www"));
+        Task created = taskManager.addTask(new Task("1", "www",LocalDateTime.now(), Duration.ofMinutes(2)));
         Task returned = taskManager.getByIdTask(created.getIdTask());
         Task change = new Task(returned);
         change.setName("2");
@@ -255,8 +278,8 @@ class InMemoryTaskManagerTest {
 
     @Test
     public void checkImmutabilityOfTaskWhenSourceChanged() {
-        Task sourse = new Task("1", "www");
-        Task created = new Task(sourse.getName(), sourse.getDescription());
+        Task sourse = new Task("1", "www",LocalDateTime.now(), Duration.ofMinutes(2));
+        Task created = new Task(sourse.getName(), sourse.getDescription(),sourse.getStartTime(),sourse.getDuration());
         taskManager.addTask(created);
         sourse.setName("2");
         assertNotEquals(sourse.getName(), taskManager.getByIdTask(created.getIdTask()).getName());
@@ -282,8 +305,10 @@ class InMemoryTaskManagerTest {
     @Test
     public void checkImmutabilityOfSubtaskWhenCreatedValueChanged() {
         Epic epic = taskManager.addEpic(new Epic("...", "www"));
-        Subtask created = taskManager.addSubtask(new Subtask("1", "www", Status.NEW, epic.getIdTask()));
-        Subtask change = new Subtask(created.getName(), created.getDescription(), created.getStatus(), created.getIdEpic());
+        Subtask created = taskManager.addSubtask(new Subtask("1", "www", Status.NEW, epic.getIdTask(),
+                LocalDateTime.now(), Duration.ofMinutes(2)));
+        Subtask change = new Subtask(created.getName(), created.getDescription(), created.getStatus(), created.getIdEpic(),
+                created.getStartTime(),created.getDuration());
         change.setName("2");
         assertNotEquals(change.getName(), taskManager.getByIdSubtask(created.getIdTask()).getName());
     }
@@ -291,8 +316,8 @@ class InMemoryTaskManagerTest {
     @Test
     public void checkImmutabilityOfSubtaskWhenSourceChanged() {
         Epic epic = taskManager.addEpic(new Epic("...", "www"));
-        Subtask source = new Subtask("1", "www", Status.NEW, epic.getIdTask());
-        Subtask created = new Subtask(source.getName(), source.getDescription(), source.getStatus(), source.getIdEpic());
+        Subtask source = new Subtask("1", "www", Status.NEW, epic.getIdTask(),LocalDateTime.now(), Duration.ofMinutes(2));
+        Subtask created = new Subtask(source.getName(), source.getDescription(), source.getStatus(), source.getIdEpic(), source.getStartTime(), source.getDuration());
         taskManager.addSubtask(created);
         source.setName("2");
         assertNotEquals(source.getName(), taskManager.getByIdSubtask(created.getIdTask()).getName());

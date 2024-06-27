@@ -1,6 +1,6 @@
 package manager;
 /*
-Переименовала переменные названия менеджеров
+1. Обновила методы, проверила как востанваливает из файла с учетом времени
  */
 
 import model.Epic;
@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 public class FileBackedTaskManagerTest {
     // Сохранение пустого файла
@@ -51,14 +53,18 @@ public class FileBackedTaskManagerTest {
             File file = File.createTempFile("test", "csv");
             FileBackedTaskManager fileManagerSave = new FileBackedTaskManager(file);
 
-            Task task1 = new Task("Задача 1", "Описание 1");
+            Task task1 = new Task("Задача 1", "Описание 1",
+                    LocalDateTime.of(2004,4,13,11,50), Duration.ofMinutes(2));
             fileManagerSave.addTask(task1);
-            Task task2 = new Task("Задача 2", "Описание 2");
+            Task task2 = new Task("Задача 2", "Описание 2",
+                    LocalDateTime.of(2024,4,13,13,50), Duration.ofMinutes(2));
             fileManagerSave.addTask(task2);
             Epic epic1 = new Epic("Эпик1", "Описание 1");
             fileManagerSave.addEpic(epic1);
-            Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask());
-            Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask());
+            Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask(),
+                    LocalDateTime.of(2024,4,13,14,40), Duration.ofMinutes(2));
+            Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask(),
+                    LocalDateTime.of(2025,4,13,11,50), Duration.ofMinutes(2));
             fileManagerSave.addSubtask(subtask1);
             fileManagerSave.addSubtask(subtask2);
 

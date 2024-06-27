@@ -5,6 +5,8 @@ import model.Status;
 import model.Subtask;
 import model.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,16 +15,16 @@ public class Main {
         Main metod = new Main();
         TaskManager taskManager = new InMemoryTaskManager();
 
-        Task task1 = new Task("Задача 1", "...");
+        Task task1 = new Task("Задача 1", "...", LocalDateTime.now(), Duration.ofMinutes(20));
         taskManager.addTask(task1);
-        Task task2 = new Task("Задача 2", "...");
+        Task task2 = new Task("Задача 2", "...", LocalDateTime.now().plusHours(2),Duration.ofMinutes(20));
         taskManager.addTask(task2);
 
         Epic epic1 = new Epic("Эпик1", "...");
         taskManager.addEpic(epic1);
-        Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask());
-        Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask());
-        Subtask subtask3 = new Subtask("Подзадача 3", "...", Status.NEW, epic1.getIdTask());
+        Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask(),LocalDateTime.now().plusHours(4),Duration.ofMinutes(20));
+        Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask(), LocalDateTime.now().plusHours(5),Duration.ofMinutes(20));
+        Subtask subtask3 = new Subtask("Подзадача 3", "...", Status.NEW, epic1.getIdTask(), LocalDateTime.now().plusHours(6),Duration.ofMinutes(20));
         taskManager.addSubtask(subtask1);
         taskManager.addSubtask(subtask2);
         taskManager.addSubtask(subtask3);
@@ -59,16 +61,16 @@ public class Main {
         metod.print(list); // подзадачи исчезли вместе с эпиком
 
 
-        Task task3 = new Task("Задача 3", "...");
+        Task task3 = new Task("Задача 3", "...", LocalDateTime.now().plusHours(8),Duration.ofMinutes(20));
         taskManager.addTask(task3);
-        Task task4 = new Task("Задача 4", "...");
+        Task task4 = new Task("Задача 4", "...", LocalDateTime.now().plusHours(9),Duration.ofMinutes(20));
         taskManager.addTask(task4);
 
         Epic epic3 = new Epic("Эпик3", "...");
         taskManager.addEpic(epic3);
-        Subtask subtask4 = new Subtask("Подзадача 3.1", "...", Status.NEW, epic3.getIdTask());
-        Subtask subtask5 = new Subtask("Подзадача 3.2", "...", Status.NEW, epic3.getIdTask());
-        Subtask subtask6 = new Subtask("Подзадача 3.3", "...", Status.NEW, epic3.getIdTask());
+        Subtask subtask4 = new Subtask("Подзадача 3.1", "...", Status.NEW, epic3.getIdTask(),LocalDateTime.now().plusHours(11),Duration.ofMinutes(20));
+        Subtask subtask5 = new Subtask("Подзадача 3.2", "...", Status.NEW, epic3.getIdTask(),LocalDateTime.now().plusHours(12),Duration.ofMinutes(20));
+        Subtask subtask6 = new Subtask("Подзадача 3.3", "...", Status.NEW, epic3.getIdTask(),LocalDateTime.now().plusHours(13),Duration.ofMinutes(20));
         taskManager.addSubtask(subtask4);
         taskManager.addSubtask(subtask5);
         taskManager.addSubtask(subtask6);
@@ -96,9 +98,9 @@ public class Main {
 
         Epic epic4 = new Epic("Эпик4", "...");
         taskManager.addEpic(epic4);
-        Subtask subtask7 = new Subtask("Подзадача 4.1", "...", Status.NEW, epic4.getIdTask());
-        Subtask subtask8 = new Subtask("Подзадача 4.2", "...", Status.NEW, epic4.getIdTask());
-        Subtask subtask9 = new Subtask("Подзадача 4.3", "...", Status.NEW, epic4.getIdTask());
+        Subtask subtask7 = new Subtask("Подзадача 4.1", "...", Status.NEW, epic4.getIdTask(),LocalDateTime.now().plusHours(15),Duration.ofMinutes(20));
+        Subtask subtask8 = new Subtask("Подзадача 4.2", "...", Status.NEW, epic4.getIdTask(),LocalDateTime.now().plusHours(16),Duration.ofMinutes(20));
+        Subtask subtask9 = new Subtask("Подзадача 4.3", "...", Status.NEW, epic4.getIdTask(),LocalDateTime.now().plusHours(17),Duration.ofMinutes(20));
         taskManager.addSubtask(subtask7);
         taskManager.addSubtask(subtask8);
         taskManager.addSubtask(subtask9);

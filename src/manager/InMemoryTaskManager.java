@@ -1,13 +1,17 @@
 package manager;
+/*
+1. При добавлении задач и подзадач учитывает время и продолжительность
+2. Пересчитваает эти параметры для эпика в зависимости от подзадач при добвалении подзадач или удалении
+ */
 
 import model.Epic;
 import model.Status;
 import model.Subtask;
 import model.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -19,6 +23,8 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Task> tasks = new HashMap<>();
     protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
+
+    private final TreeSet<Task> prioritizedTasks = new TreeSet<>();
 
     // Создание
     @Override
@@ -49,6 +55,15 @@ public class InMemoryTaskManager implements TaskManager {
         ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
         subtaskIds.add(subtask.getIdTask());
         updateStatus(epicId);
+        if (epic.getStartTime()==null || epic.getStartTime().isAfter(subtask.getStartTime())){
+            epic.setStartTime(subtask.getStartTime());
+        }
+        LocalDateTime endTimeSubtask=subtask.getStartTime().plus(subtask.getDuration());
+        if (epic.getEndTime()==null || epic.getEndTime().isBefore(endTimeSubtask)){
+            epic.setEndTime(endTimeSubtask);
+        }
+        epic.setDuration(epic.getDuration().plus(subtask.getDuration()));
+
         return subtask;
     }
 
@@ -153,6 +168,9 @@ public class InMemoryTaskManager implements TaskManager {
         for (Epic epic : epics.values()) {
             epic.getSubtasks().clear();
             updateStatus(epic.getIdTask());
+            epic.setStartTime(null);
+            epic.setEndTime(null);
+            epic.setDuration(Duration.ZERO);
         }
         for (Integer id : subtasks.keySet()) {
             historyManager.remove(id);
@@ -182,10 +200,28 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteByIdSubtask(Integer id) {
         int epicId = subtasks.get(id).getIdEpic();
         ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
+
+        Epic epic = epics.get(epicId);
+        Duration durationSubtask = subtasks.get(id).getDuration();
+        LocalDateTime startSubtask=subtasks.get(id).getStartTime();
+        epic.setDuration(epic.getDuration().minus(durationSubtask));
+
         subtaskIds.remove(id);
         subtasks.remove(id);
         updateStatus(epicId);
         historyManager.remove(id);
+
+        List<Subtask> subtaskList=getSubtasksEpic(epicId);
+        Comparator<Subtask> comparator= Comparator.comparing(Subtask::getStartTime);
+
+        if (epic.getStartTime().equals(startSubtask)){
+            Optional<Subtask> minTimeSubtask=subtaskList.stream().min(comparator);
+            minTimeSubtask.ifPresent(subtask -> epic.setStartTime(subtask.getStartTime()));
+        }
+        if (epic.getEndTime().equals(startSubtask.plus(durationSubtask))){
+            Optional<Subtask> maxTimeSubtask=subtaskList.stream().max(comparator);
+            maxTimeSubtask.ifPresent(subtask -> epic.setEndTime(subtask.getStartTime().plus(subtask.getDuration())));
+        }
     }
 
     // История
@@ -193,14 +229,27 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Task> getHistory() {
         return historyManager.getHistory();
     }
+    public HashMap<Integer, Task> getTasks() {
+        return tasks;
+    }
 
     private int getIdCounter() {
         return idCounter++;
     }
 
-    public HashMap<Integer, Task> getTasks() {
-        return tasks;
-    }
+   private void getPrioritizedTasks(){
+   prioritizedTasks.clear();
+   for (Task task:tasks.values()){
+       if (task.getStartTime().toLocalDate()!=null){
+           prioritizedTasks.add(task);
+       }
+   }
+   for (Subtask subtask:subtasks.values()){
+       if (subtask.getStartTime().toLocalDate()!=null){
+           prioritizedTasks.add(subtask);
+       }
+   }
+   }
 
     private void updateStatus(int idEpic) {
         int counterNew = 0;
