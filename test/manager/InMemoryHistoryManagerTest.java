@@ -70,9 +70,9 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void addTaskTest() {
-        Task task1 = new Task("1", 0, "www",LocalDateTime.now(), Duration.ofMinutes(2));
-        Task task2 = new Task("2", 1, "www",LocalDateTime.now(), Duration.ofMinutes(8));
-        Task task3 = new Task("3", 2, "www",LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task1 = new Task("1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(8));
+        Task task3 = new Task("3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(6));
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);
@@ -94,11 +94,11 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void deleteByIdTest() {
-        Task task1 = new Task("Задача 1", 0, "www",LocalDateTime.now(), Duration.ofMinutes(2));
-        Task task2 = new Task("Задача 2", 1, "www",LocalDateTime.now(), Duration.ofMinutes(6));
-        Task task3 = new Task("Задача 3", 2, "www",LocalDateTime.now(), Duration.ofMinutes(5));
-        Task task4 = new Task("Задача 4", 3, "www",LocalDateTime.now(), Duration.ofMinutes(2));
-        Task task5 = new Task("Задача 5", 4, "www",LocalDateTime.now(), Duration.ofMinutes(3));
+        Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task3 = new Task("Задача 3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(5));
+        Task task4 = new Task("Задача 4", 3, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task5 = new Task("Задача 5", 4, "www", LocalDateTime.now(), Duration.ofMinutes(3));
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);

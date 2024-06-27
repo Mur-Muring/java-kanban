@@ -11,7 +11,7 @@ public class Epic extends Task {
 
 
     public Epic(String name, String description) {
-        super(name, description, Status.NEW,null, Duration.ofMinutes(0));
+        super(name, description, Status.NEW, null, Duration.ofMinutes(0));
     }
 
     public ArrayList<Integer> getSubtasks() {
@@ -56,11 +56,9 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("Epic{");
-        sb.append("subtasks=").append(subtasks);
-        sb.append(", endTime=").append(endTime);
-        sb.append(", startTime=").append(startTime);
-        sb.append('}');
-        return sb.toString();
+        return "Epic{" + "subtasks=" + subtasks +
+                ", endTime=" + endTime +
+                ", startTime=" + startTime +
+                '}';
     }
 }

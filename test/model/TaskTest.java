@@ -13,7 +13,7 @@ class TaskTest {
     @Test
     public void comparisonOfTasksWithTheSameId() {
         Task task1 = new Task("Уборка", "Убрать комнату",
-                LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
+                LocalDateTime.of(1994, 4, 13, 11, 50), Duration.ofMinutes(2));
         Task task2 = new Task("Уборка", "Убрать комнату",
                 LocalDateTime.of(1994,4,13,11,50), Duration.ofMinutes(2));
         task1.setIdTask(1);

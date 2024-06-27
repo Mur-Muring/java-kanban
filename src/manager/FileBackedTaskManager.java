@@ -111,12 +111,12 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             List<Task> tasksList = Arrays.stream(lines)
                     .skip(1)
-                    .map(line -> Optional.ofNullable(fromString(line)))
+                    .map(line -> Optional.of(fromString(line)))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .toList();
 
-            for (Task task:tasksList) {
+            for (Task task : tasksList) {
                 switch (task.getTypeOfTask()) {
                     case TASK -> fileBackedTaskManager.tasks.put(task.getIdTask(), task);
                     case EPIC -> fileBackedTaskManager.epics.put(task.getIdTask(), (Epic) task);
@@ -164,18 +164,18 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         Task task1 = new Task("Задача 1", "Описание 1", LocalDateTime.now(), Duration.ofMinutes(2));
         fileManager1.addTask(task1);
-        Task task2 = new Task("Задача 2", "Описание 2",LocalDateTime.now().plusHours(1),Duration.ofMinutes(20));
+        Task task2 = new Task("Задача 2", "Описание 2", LocalDateTime.now().plusHours(1), Duration.ofMinutes(20));
         fileManager1.addTask(task2);
 
         Epic epic1 = new Epic("Эпик1", "Описание 1");
         fileManager1.addEpic(epic1);
-        Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask(),LocalDateTime.now().plusHours(2),Duration.ofMinutes(2));
-        Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask(),LocalDateTime.now().plusHours(3),Duration.ofMinutes(20));
+        Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask(), LocalDateTime.now().plusHours(2), Duration.ofMinutes(2));
+        Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask(), LocalDateTime.now().plusHours(3), Duration.ofMinutes(20));
         fileManager1.addSubtask(subtask1);
         fileManager1.addSubtask(subtask2);
         Epic epic2 = new Epic("Эпик2", "Описание 2");
         fileManager1.addEpic(epic2);
-        Task task3 = new Task("Задача 3", "Описание 3",LocalDateTime.now().plusHours(4),Duration.ofMinutes(20));
+        Task task3 = new Task("Задача 3", "Описание 3", LocalDateTime.now().plusHours(4), Duration.ofMinutes(20));
         fileManager1.addTask(task3);
 
         FileBackedTaskManager fileManager2 = FileBackedTaskManager.loadFromFile(fileTest);

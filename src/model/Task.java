@@ -1,5 +1,6 @@
 package model;
 //1. Добавила новые поля
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -20,33 +21,33 @@ public class Task {
         this.id = id;
         this.description = description;
         this.status = status;
-        this.startTime=startTime;
-        this.duration=duration;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
-    public Task(String name, String description, Status status,LocalDateTime startTime, Duration duration) {
+    public Task(String name, String description, Status status, LocalDateTime startTime, Duration duration) {
         this.name = name;
         this.description = description;
         this.status = status;
-        this.startTime=startTime;
-        this.duration=duration;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public Task(String name, String description, LocalDateTime startTime, Duration duration) {
         this.name = name;
         this.description = description;
         this.status = Status.NEW;
-        this.startTime=startTime;
-        this.duration=duration;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public Task(String name, Integer id, String description, LocalDateTime startTime, Duration duration) {
-        this.name=name;
+        this.name = name;
         this.id = id;
         this.description = description;
         this.status = Status.NEW;
-        this.startTime=startTime;
-        this.duration=duration;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public Task(Task task) {
@@ -111,7 +112,7 @@ public class Task {
         return null;
     }
 
-    public LocalDateTime getEndTime(){
+    public LocalDateTime getEndTime() {
         return startTime.plusMinutes(duration.toMinutes());
     }
 

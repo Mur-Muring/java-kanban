@@ -4,7 +4,6 @@ import model.Epic;
 import model.Subtask;
 import model.Task;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskManager {
@@ -23,14 +22,14 @@ public interface TaskManager {
     void updateSubtask(Subtask subtask);
 
     // Получение списка всех задач
-    ArrayList<Task> getAllTasks();
+    List<Task> getAllTasks();
 
-    ArrayList<Epic> getAllEpics();
+    List<Epic> getAllEpics();
 
-    ArrayList<Subtask> getAllSubtasks();
+    List<Subtask> getAllSubtasks();
 
     // Изменила вывод подзадач конктретного эпика
-    ArrayList<Subtask> getSubtasksEpic(Integer id);
+    List<Subtask> getSubtasksEpic(Integer id);
 
     // Получение по ID
     Task getByIdTask(Integer id);
