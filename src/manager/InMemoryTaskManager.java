@@ -3,8 +3,11 @@ package manager;
 1. При добавлении задач и подзадач учитывает время и продолжительность
 2. Пересчитваает эти параметры для эпика в зависимости от подзадач при добвалении подзадач или удалении
 3. Создала множество уникальных задач отсортированных по времени, задачу нельзя добавить, если отсуствует дата
+4. Добавила методы валидации и конфликта времени, интегрировала их в методы добавления и обновления, в случае ошибки
+вызывается собственое исключение
  */
 
+import exception.TimeConflictException;
 import model.Epic;
 import model.Status;
 import model.Subtask;
@@ -29,7 +32,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Создание
     @Override
-    public Task addTask(Task task) {
+    public Task addTask(Task task) throws TimeConflictException {
+        if (!isValidTaskForTime(task)){
+            throw new IllegalArgumentException("Пересмотрите временные параметры");
+        }
+        if (timeConflict(task)){
+            throw new TimeConflictException("Задачи пересекаются во времени");
+        }
         if (task != null) {
             task.setIdTask(getIdCounter());
             tasks.put(task.getIdTask(), task);
@@ -46,7 +55,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask addSubtask(Subtask subtask) {
+    public Subtask addSubtask(Subtask subtask) throws TimeConflictException{
+        if (!isValidTaskForTime(subtask)){
+            throw new IllegalArgumentException("Пересмотрите временные параметры");
+        }
+        if (timeConflict(subtask)){
+            throw new TimeConflictException("Задачи пересекаются во времени");
+        }
         Epic epic = epics.get(subtask.getIdEpic());
         if (epic == null) {
             return null;
@@ -60,7 +75,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epic.getStartTime()==null || epic.getStartTime().isAfter(subtask.getStartTime())){
             epic.setStartTime(subtask.getStartTime());
         }
-        LocalDateTime endTimeSubtask=subtask.getStartTime().plus(subtask.getDuration());
+        LocalDateTime endTimeSubtask=subtask.getEndTime();
         if (epic.getEndTime()==null || epic.getEndTime().isBefore(endTimeSubtask)){
             epic.setEndTime(endTimeSubtask);
         }
@@ -74,6 +89,9 @@ public class InMemoryTaskManager implements TaskManager {
     // Обновление
     @Override
     public void updateTask(Task task) {
+        if (!isValidTaskForTime(task)){
+            throw new IllegalArgumentException("Пересмотрите временные параметры");
+        }
         if (tasks.get(task.getIdTask()) != null) {
             tasks.put(task.getIdTask(), task);
             updatePrioritizedTasks();
@@ -92,6 +110,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateSubtask(Subtask subtask) {
+        if (!isValidTaskForTime(subtask)){
+            throw new IllegalArgumentException("Пересмотрите временные параметры");
+        }
         if (epics.containsKey(subtask.getIdEpic())) {
             subtasks.put(subtask.getIdTask(), subtask);
             int epicId = subtasks.get(subtask.getIdTask()).getIdEpic();
@@ -214,6 +235,7 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epics.get(epicId);
         Duration durationSubtask = subtasks.get(id).getDuration();
         LocalDateTime startSubtask=subtasks.get(id).getStartTime();
+        LocalDateTime endSubtask=subtasks.get(id).getEndTime();
         epic.setDuration(epic.getDuration().minus(durationSubtask));
 
         subtaskIds.remove(id);
@@ -228,9 +250,9 @@ public class InMemoryTaskManager implements TaskManager {
             Optional<Subtask> minTimeSubtask=subtaskList.stream().min(comparator);
             minTimeSubtask.ifPresent(subtask -> epic.setStartTime(subtask.getStartTime()));
         }
-        if (epic.getEndTime().equals(startSubtask.plus(durationSubtask))){
+        if (epic.getEndTime().equals(endSubtask)){
             Optional<Subtask> maxTimeSubtask=subtaskList.stream().max(comparator);
-            maxTimeSubtask.ifPresent(subtask -> epic.setEndTime(subtask.getStartTime().plus(subtask.getDuration())));
+            maxTimeSubtask.ifPresent(subtask -> epic.setEndTime(subtask.getEndTime()));
         }
         updatePrioritizedTasks();
     }
@@ -264,6 +286,20 @@ public class InMemoryTaskManager implements TaskManager {
            .filter(subtask -> subtask.getStartTime().toLocalDate()!=null)
            .toList());
    }
+   // Метод валидации
+   private boolean isValidTaskForTime(Task task){
+        LocalDateTime startTime = task.getStartTime();
+        LocalDateTime endTime = task.getEndTime();
+        return startTime!=null && endTime!=null && startTime.isBefore(endTime);
+   }
+
+   // конфликт по времени задач
+    public boolean timeConflict(Task task){
+        List<Task> sortTask=getPrioritizedTasks();
+        return sortTask.stream()
+                .anyMatch(existingTask -> !existingTask.getEndTime().isBefore(task.getStartTime()) &&
+                        !task.getEndTime().isBefore(existingTask.getStartTime()));
+    }
 
     private void updateStatus(int idEpic) {
         int counterNew = 0;

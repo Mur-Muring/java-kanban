@@ -9,8 +9,10 @@ package manager;
 1. Обновила методы, проверила как сохраняктся время и продолжительность для задач, и как пересчитывается для
 эпиков при удалении подзадач
 2. Добавила тест на проверку сортировки задач и подзадач по времени
+3. Добавила тесты на валидность и конфликты по времени в выполнении задачи
  */
 
+import exception.TimeConflictException;
 import model.Epic;
 import model.Status;
 import model.Subtask;
@@ -100,7 +102,7 @@ class InMemoryTaskManagerTest {
     public void noConflictBetweenTasksWithGeneratedAndPreassignedIDs() {
         Task taskPreassigned = new Task("Кот", 0, "...",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(taskPreassigned);
-        Task taskGenerate = new Task("Собака", "...",LocalDateTime.now(), Duration.ofMinutes(2));
+        Task taskGenerate = new Task("Собака", "...",LocalDateTime.now().plusHours(1), Duration.ofMinutes(2));
         taskManager.addTask(taskGenerate);
 
         int idTaskPreassigned = taskPreassigned.getIdTask();
@@ -182,7 +184,7 @@ class InMemoryTaskManagerTest {
         Task task1 = new Task("Ночь", "...",LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addTask(task1);
         int id = task1.getIdTask();
-        Task task2 = new Task("День", "...",LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("День", "...",LocalDateTime.now().plusMinutes(49), Duration.ofMinutes(2));
         taskManager.addTask(task2);
 
         taskManager.deleteByIdTask(id);
@@ -260,7 +262,7 @@ class InMemoryTaskManagerTest {
         Status status1 = epic.getStatus();
         Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0,LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask1);
-        Subtask subtask2 = new Subtask("...", "...", Status.DONE, 0,LocalDateTime.now(), Duration.ofMinutes(2));
+        Subtask subtask2 = new Subtask("...", "...", Status.DONE, 0,LocalDateTime.now().plusHours(1), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask2);
         Status status2 = epic.getStatus();
 
@@ -364,6 +366,48 @@ class InMemoryTaskManagerTest {
         taskManager.deleteByIdEpic(epic2.getIdTask());
         sortTasks=taskManager.getPrioritizedTasks();
         assertEquals(expected,sortTasks,"Ошибка сохранения подзадач при удалени эпиков по id");
+    }
+
+    @Test
+    public void timeConflictTest(){
+        Task task1 = new Task("Кот", 0, "...",LocalDateTime.now(), Duration.ofMinutes(25));
+        Task task2= new Task("Собака", "...",LocalDateTime.now().plusHours(1), Duration.ofMinutes(2));
+
+        assertDoesNotThrow(() -> taskManager.addTask(task1),"Ошибка во времени при добавлении задачи");
+        assertDoesNotThrow(() -> taskManager.addTask(task2),"Конфликт в задачах с разным временем");
+
+        List<Task> tasks = taskManager.getPrioritizedTasks();
+        assertEquals(2,tasks.size(),"Возник конфликт времени, задачи не добавлены в список");
+
+        Epic epic = new Epic("...","...");
+        taskManager.addEpic(epic);
+
+        Subtask subtask = new Subtask("Кот","...", Status.NEW, epic.getIdTask(),
+                LocalDateTime.now().plusHours(2), Duration.ofMinutes(125));
+        Subtask subtask2= new Subtask("Собака", "...",Status.DONE,epic.getIdTask(),
+                LocalDateTime.now().plusHours(3), Duration.ofMinutes(32));
+
+        assertDoesNotThrow(() -> taskManager.addSubtask(subtask),"Ошибка во времени при добавлении подзадачи");
+        assertThrows(TimeConflictException.class,() -> taskManager.addSubtask(subtask2),"Добавляются подзадачи с конфликтом времени");
+
+        List<Task> tasks2 = taskManager.getPrioritizedTasks();
+        assertEquals(3,tasks2.size(),"Добавляются задачи с конфликтом времени");
+    }
+
+    @Test
+    public void inValidForTimeTest(){
+        Task invalidTask = new Task("Кот", 0, "...",LocalDateTime.now(), Duration.ofMinutes(-60));
+        Epic epic = new Epic("...","...");
+        taskManager.addEpic(epic);
+        Subtask invalidSubtask = new Subtask("Кот","...", Status.NEW, epic.getIdTask(),
+                LocalDateTime.now().plusHours(2), Duration.ofMinutes(-300));
+
+        assertThrows(IllegalArgumentException.class,()->taskManager.addTask(invalidTask),"Добавилась невалидная задача");
+        assertThrows(IllegalArgumentException.class,()->taskManager.addSubtask(invalidSubtask),"Добавилась невалидная подзадача");
+
+        List<Task> tasks = taskManager.getPrioritizedTasks();
+        assertTrue(tasks.isEmpty(), "Список не пуст, добавилась невалижная задача");
+
     }
 }
 
