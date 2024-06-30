@@ -56,4 +56,5 @@ public interface TaskManager {
 
     //Приоритетность задач
     List<Task> getPrioritizedTasks();
+
 }

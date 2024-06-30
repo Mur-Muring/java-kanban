@@ -1,5 +1,6 @@
 package model;
-//1. Добавила новые поля
+//1. Добавила модификатор доступа у поля startTime
+//2. Конструкторы вызывают друг друга
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ public class Task {
     //продолжительность задачи в минутах
     private Duration duration;
     // дата и время, когда предполагается приступить к выполнению задачи
-    LocalDateTime startTime;
+    private LocalDateTime startTime;
 
 
     public Task(String name, Integer id, String description, Status status, LocalDateTime startTime, Duration duration) {
@@ -26,34 +27,19 @@ public class Task {
     }
 
     public Task(String name, String description, Status status, LocalDateTime startTime, Duration duration) {
-        this.name = name;
-        this.description = description;
-        this.status = status;
-        this.startTime = startTime;
-        this.duration = duration;
+        this(name, null, description, status, startTime, duration);
     }
 
     public Task(String name, String description, LocalDateTime startTime, Duration duration) {
-        this.name = name;
-        this.description = description;
-        this.status = Status.NEW;
-        this.startTime = startTime;
-        this.duration = duration;
+        this(name, null, description, Status.NEW, startTime, duration);
     }
 
     public Task(String name, Integer id, String description, LocalDateTime startTime, Duration duration) {
-        this.name = name;
-        this.id = id;
-        this.description = description;
-        this.status = Status.NEW;
-        this.startTime = startTime;
-        this.duration = duration;
+        this(name, id, description, Status.NEW, startTime, duration);
     }
 
     public Task(Task task) {
-        this(task.name, task.description, task.startTime, task.duration);
-        this.status = task.status;
-        this.id = task.id;
+        this(task.name, task.id, task.description, task.status, task.startTime, task.duration);
     }
 
     public String getName() {
@@ -131,14 +117,12 @@ public class Task {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("Task{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", id=").append(id);
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", status=").append(status);
-        sb.append(", duration=").append(duration);
-        sb.append(", startTime=").append(startTime);
-        sb.append('}');
-        return sb.toString();
+        return "Task{" + "name='" + name + '\'' +
+                ", id=" + id +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
+                '}';
     }
 }

@@ -6,7 +6,7 @@ import java.util.Objects;
 
 public class Subtask extends Task {
 
-    private Integer idEpic;
+    private final Integer idEpic;
 
     public Subtask(String name, String description, Status status, Integer idEpic, LocalDateTime localDateTime, Duration duration) {
         super(name, description, status, localDateTime, duration);
@@ -37,10 +37,7 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("Subtask{");
-        sb.append("idEpic=").append(idEpic);
-        sb.append(", startTime=").append(startTime);
-        sb.append('}');
-        return sb.toString();
+        return "Subtask{" + "idEpic=" + idEpic +
+                '}';
     }
 }

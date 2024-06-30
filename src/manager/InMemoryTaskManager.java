@@ -1,11 +1,7 @@
 package manager;
 /*
-1. При добавлении задач и подзадач учитывает время и продолжительность
-2. Пересчитваает эти параметры для эпика в зависимости от подзадач при добвалении подзадач или удалении
-3. Создала множество уникальных задач отсортированных по времени, задачу нельзя добавить, если отсуствует дата
-4. Добавила методы валидации и конфликта времени, интегрировала их в методы добавления и обновления, в случае ошибки
-вызывается собственое исключение
-5. Меняла циклф на Stream API
+1. Написала метод расчета временных полей эпика. Хотела сделать так изнасально, но мне казалось, что работать с
+конкретными значениями быстрее, чем бегать по всем спискам
  */
 
 import exception.TimeConflictException;
@@ -19,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 public class InMemoryTaskManager implements TaskManager {
 
     private Integer idCounter = 0;
@@ -30,11 +27,11 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
     protected final HashMap<Integer, Epic> epics = new HashMap<>();
 
-    private final TreeSet<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
+    protected final TreeSet<Task> prioritizedTasks = new TreeSet<>(Comparator.comparing(Task::getStartTime));
 
     // Создание
     @Override
-    public Task addTask(Task task) throws TimeConflictException {
+    public Task addTask(Task task) {
         if (!isValidTaskForTime(task)) {
             throw new IllegalArgumentException("Пересмотрите временные параметры");
         }
@@ -57,7 +54,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask addSubtask(Subtask subtask) throws TimeConflictException {
+    public Subtask addSubtask(Subtask subtask) {
         if (!isValidTaskForTime(subtask)) {
             throw new IllegalArgumentException("Пересмотрите временные параметры");
         }
@@ -74,15 +71,7 @@ public class InMemoryTaskManager implements TaskManager {
         ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
         subtaskIds.add(subtask.getIdTask());
         updateStatus(epicId);
-        if (epic.getStartTime() == null || epic.getStartTime().isAfter(subtask.getStartTime())) {
-            epic.setStartTime(subtask.getStartTime());
-        }
-        LocalDateTime endTimeSubtask = subtask.getEndTime();
-        if (epic.getEndTime() == null || epic.getEndTime().isBefore(endTimeSubtask)) {
-            epic.setEndTime(endTimeSubtask);
-        }
-        epic.setDuration(epic.getDuration().plus(subtask.getDuration()));
-
+        updateTimeForEpic(epicId);
         updatePrioritizedTasks();
 
         return subtask;
@@ -120,6 +109,7 @@ public class InMemoryTaskManager implements TaskManager {
             int epicId = subtasks.get(subtask.getIdTask()).getIdEpic();
             updateStatus(epicId);
             updatePrioritizedTasks();
+            updateTimeForEpic(subtask.getIdEpic());
         }
     }
 
@@ -190,9 +180,7 @@ public class InMemoryTaskManager implements TaskManager {
         epics.values().forEach(epic -> {
             epic.getSubtasks().clear();
             updateStatus(epic.getIdTask());
-            epic.setStartTime(null);
-            epic.setEndTime(null);
-            epic.setDuration(Duration.ZERO);
+            updateTimeForEpic(epic.getIdTask());
         });
         subtasks.keySet().forEach(historyManager::remove);
         subtasks.clear();
@@ -222,29 +210,11 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteByIdSubtask(Integer id) {
         int epicId = subtasks.get(id).getIdEpic();
         ArrayList<Integer> subtaskIds = epics.get(epicId).getSubtasks();
-
-        Epic epic = epics.get(epicId);
-        Duration durationSubtask = subtasks.get(id).getDuration();
-        LocalDateTime startSubtask = subtasks.get(id).getStartTime();
-        LocalDateTime endSubtask = subtasks.get(id).getEndTime();
-        epic.setDuration(epic.getDuration().minus(durationSubtask));
-
         subtaskIds.remove(id);
         subtasks.remove(id);
         updateStatus(epicId);
         historyManager.remove(id);
-
-        List<Subtask> subtaskList = getSubtasksEpic(epicId);
-        Comparator<Subtask> comparator = Comparator.comparing(Subtask::getStartTime);
-
-        if (epic.getStartTime().equals(startSubtask)) {
-            Optional<Subtask> minTimeSubtask = subtaskList.stream().min(comparator);
-            minTimeSubtask.ifPresent(subtask -> epic.setStartTime(subtask.getStartTime()));
-        }
-        if (epic.getEndTime().equals(endSubtask)) {
-            Optional<Subtask> maxTimeSubtask = subtaskList.stream().max(comparator);
-            maxTimeSubtask.ifPresent(subtask -> epic.setEndTime(subtask.getEndTime()));
-        }
+        updateTimeForEpic(epicId);
         updatePrioritizedTasks();
     }
 
@@ -252,10 +222,6 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public List<Task> getHistory() {
         return historyManager.getHistory();
-    }
-
-    public HashMap<Integer, Task> getTasks() {
-        return tasks;
     }
 
     private int getIdCounter() {
@@ -287,11 +253,39 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     // конфликт по времени задач
-    public boolean timeConflict(Task task) {
+    private boolean timeConflict(Task task) {
         List<Task> sortTask = getPrioritizedTasks();
         return sortTask.stream()
                 .anyMatch(existingTask -> !existingTask.getEndTime().isBefore(task.getStartTime()) &&
                         !task.getEndTime().isBefore(existingTask.getStartTime()));
+    }
+
+    private void updateTimeForEpic(int idEpic) {
+        Epic epic = epics.get(idEpic);
+
+        if (epic != null) {
+            List<Subtask> subtaskList = getSubtasksEpic(idEpic);
+            LocalDateTime startTime = subtaskList.stream()
+                    .map(Subtask::getStartTime)
+                    .filter(Objects::nonNull)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            LocalDateTime endTime = subtaskList.stream()
+                    .map(subtaskObj -> subtaskObj.getStartTime().plus(subtaskObj.getDuration()))
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+
+            epic.setStartTime(startTime);
+            epic.setEndTime(endTime);
+
+            Duration duration = subtaskList.stream()
+                    .map(Subtask::getDuration)
+                    .filter(Objects::nonNull)
+                    .reduce(Duration.ZERO, Duration::plus);
+
+            epic.setDuration(duration);
+        }
     }
 
     private void updateStatus(int idEpic) {

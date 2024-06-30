@@ -2,6 +2,7 @@
 1. Исправила тест удаления из середины
  */
 package manager;
+//реализовала все методы класса HistoryManager
 
 import model.Epic;
 import model.Status;
@@ -93,6 +94,19 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
+    public void removeTest() {
+        Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task3 = new Task("Задача 3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(5));
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+
+        historyManager.remove(task2.getIdTask());
+        Assertions.assertEquals(List.of(task1, task3), historyManager.getHistory(), "Ошибка в методе remove()");
+    }
+
+    @Test
     public void deleteByIdTest() {
         Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
         Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
@@ -121,6 +135,18 @@ class InMemoryHistoryManagerTest {
         historyManager.remove(task5.getIdTask());
         Assertions.assertEquals(List.of(task2, task4), historyManager.getHistory(),
                 "Порядок списка нарушен(удаление из конца");
+    }
+
+    @Test
+    public void getHistory() {
+        Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task3 = new Task("Задача 3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(5));
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+
+        Assertions.assertEquals(List.of(task1, task2, task3), historyManager.getHistory(), "Ошибка в вызове истории");
     }
 }
 

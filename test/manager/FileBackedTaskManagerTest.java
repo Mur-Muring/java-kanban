@@ -15,8 +15,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
-public class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+
+    @Override
+    protected FileBackedTaskManager createTaskManager() {
+        return new FileBackedTaskManager(new File("test.csv"));
+    }
+
     // Сохранение пустого файла
     @Test
     void savingAnEmptyFileTest() {
@@ -67,8 +74,10 @@ public class FileBackedTaskManagerTest {
                     LocalDateTime.of(2025, 4, 13, 11, 50), Duration.ofMinutes(2));
             fileManagerSave.addSubtask(subtask1);
             fileManagerSave.addSubtask(subtask2);
+            List<Task> before = fileManagerSave.getPrioritizedTasks();
 
             FileBackedTaskManager fileManagerLoad = FileBackedTaskManager.loadFromFile(file);
+            List<Task> after = fileManagerSave.getPrioritizedTasks();
 
             Assertions.assertEquals(fileManagerSave.getAllTasks(), fileManagerLoad.getAllTasks(),
                     "Ошибка востановления задач");
@@ -76,6 +85,7 @@ public class FileBackedTaskManagerTest {
                     "Ошибка востановления эпиков");
             Assertions.assertEquals(fileManagerSave.getAllSubtasks(), fileManagerLoad.getAllSubtasks(),
                     "Ошибка востановления подзадач");
+            Assertions.assertEquals(before, after, "После восстановления задачи (подзадачи) не попали в отсортированный список");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -1,6 +1,6 @@
 package manager;
 /*
-
+1. после восстановления задачи попадают в остортированный список
  */
 
 import exception.ManagerSaveException;
@@ -20,6 +20,7 @@ import java.util.Optional;
 import static manager.Utils.fromString;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
+
     private final File file;
     private static final String TITLE = "id,type,name,status,description,epic, start_time, duration, end_time";
     protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
@@ -118,13 +119,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
             for (Task task : tasksList) {
                 switch (task.getTypeOfTask()) {
-                    case TASK -> fileBackedTaskManager.tasks.put(task.getIdTask(), task);
+                    case TASK -> {
+                        fileBackedTaskManager.tasks.put(task.getIdTask(), task);
+                        fileBackedTaskManager.prioritizedTasks.add(task);
+                    }
                     case EPIC -> fileBackedTaskManager.epics.put(task.getIdTask(), (Epic) task);
                     case SUBTASK -> {
                         fileBackedTaskManager.subtasks.put(task.getIdTask(), (Subtask) task);
                         Subtask subTask = (Subtask) task;
                         Epic epic = fileBackedTaskManager.epics.get(subTask.getIdEpic());
                         epic.addSubTask(subTask);
+                        fileBackedTaskManager.prioritizedTasks.add(task);
                     }
                     default -> throw new IllegalStateException("Неверное значение");
                 }
