@@ -1,8 +1,8 @@
-id,type,name,status,description,epic
-0,TASK,Задача 1,NEW,Описание 1,null
-1,TASK,Задача 2,NEW,Описание 2,null
-6,TASK,Задача 3,NEW,Описание 3,null
-2,EPIC,Эпик1,NEW,Описание 1,null
-5,EPIC,Эпик2,NEW,Описание 2,null
-3,SUBTASK,Подзадача 1,NEW,...,2
-4,SUBTASK,Подзадача 2,NEW,...,2
+id,type,name,status,description,epic, start_time, duration, end_time
+0,TASK,Задача 1,NEW,Описание 1,null,30.06.24 05:17,2,30.06.24 05:19
+1,TASK,Задача 2,NEW,Описание 2,null,30.06.24 06:17,20,30.06.24 06:37
+6,TASK,Задача 3,NEW,Описание 3,null,30.06.24 09:17,20,30.06.24 09:37
+2,EPIC,Эпик1,NEW,Описание 1,null,30.06.24 07:17,22,30.06.24 08:37
+5,EPIC,Эпик2,NEW,Описание 2,null,,0,
+3,SUBTASK,Подзадача 1,NEW,...,2,30.06.24 07:17,2,30.06.24 07:19
+4,SUBTASK,Подзадача 2,NEW,...,2,30.06.24 08:17,20,30.06.24 08:37

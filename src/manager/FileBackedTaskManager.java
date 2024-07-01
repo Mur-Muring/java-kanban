@@ -1,13 +1,6 @@
 package manager;
 /*
-1. название статик переменной большими буквами (строка 19)
-2. Убрала save() из конструктора
-3. Переименнова переменные в методах add..()
-4. Удалила методы getAll...().
-5. Методы в строку/из строки перенесла в утилитарный класс toEnum
-6. В методе loadFromFile() заменила использование addTask на добавление в мапу
-7. Поменяла текст сообщения собственного исключения
-8. save() теперь приватный и переместила его вниз после публичных
+1. после восстановления задачи попадают в остортированный список
  */
 
 import exception.ManagerSaveException;
@@ -17,10 +10,20 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static manager.Utils.fromString;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
+
     private final File file;
-    private static final String TITLE = "id,type,name,status,description,epic";
+    private static final String TITLE = "id,type,name,status,description,epic, start_time, duration, end_time";
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
     public FileBackedTaskManager(File file) {
         this.file = file;
@@ -107,21 +110,26 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String[] lines = Files.readString(file.toPath()).split("\n");
             FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
 
+            List<Task> tasksList = Arrays.stream(lines)
+                    .skip(1)
+                    .map(line -> Optional.of(fromString(line)))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
 
-            for (String taskString : lines) {
-                if (taskString.equals(TITLE) || taskString.isBlank()) {
-                    continue;
-                }
-                Task task = Utils.fromString(taskString);
-
+            for (Task task : tasksList) {
                 switch (task.getTypeOfTask()) {
-                    case TASK -> fileBackedTaskManager.tasks.put(task.getIdTask(), task);
+                    case TASK -> {
+                        fileBackedTaskManager.tasks.put(task.getIdTask(), task);
+                        fileBackedTaskManager.prioritizedTasks.add(task);
+                    }
                     case EPIC -> fileBackedTaskManager.epics.put(task.getIdTask(), (Epic) task);
                     case SUBTASK -> {
                         fileBackedTaskManager.subtasks.put(task.getIdTask(), (Subtask) task);
                         Subtask subTask = (Subtask) task;
                         Epic epic = fileBackedTaskManager.epics.get(subTask.getIdEpic());
                         epic.addSubTask(subTask);
+                        fileBackedTaskManager.prioritizedTasks.add(task);
                     }
                     default -> throw new IllegalStateException("Неверное значение");
                 }
@@ -131,6 +139,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             throw new ManagerSaveException("Ошибка восстановления из файла");
         }
     }
+
 
     private void save() {
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(Paths.get(file.toURI()), StandardCharsets.UTF_8)) {
@@ -158,20 +167,20 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         FileBackedTaskManager fileManager1 = new FileBackedTaskManager(fileTest);
 
-        Task task1 = new Task("Задача 1", "Описание 1");
+        Task task1 = new Task("Задача 1", "Описание 1", LocalDateTime.now(), Duration.ofMinutes(2));
         fileManager1.addTask(task1);
-        Task task2 = new Task("Задача 2", "Описание 2");
+        Task task2 = new Task("Задача 2", "Описание 2", LocalDateTime.now().plusHours(1), Duration.ofMinutes(20));
         fileManager1.addTask(task2);
 
         Epic epic1 = new Epic("Эпик1", "Описание 1");
         fileManager1.addEpic(epic1);
-        Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask());
-        Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask());
+        Subtask subtask1 = new Subtask("Подзадача 1", "...", Status.NEW, epic1.getIdTask(), LocalDateTime.now().plusHours(2), Duration.ofMinutes(2));
+        Subtask subtask2 = new Subtask("Подзадача 2", "...", Status.NEW, epic1.getIdTask(), LocalDateTime.now().plusHours(3), Duration.ofMinutes(20));
         fileManager1.addSubtask(subtask1);
         fileManager1.addSubtask(subtask2);
         Epic epic2 = new Epic("Эпик2", "Описание 2");
         fileManager1.addEpic(epic2);
-        Task task3 = new Task("Задача 3", "Описание 3");
+        Task task3 = new Task("Задача 3", "Описание 3", LocalDateTime.now().plusHours(4), Duration.ofMinutes(20));
         fileManager1.addTask(task3);
 
         FileBackedTaskManager fileManager2 = FileBackedTaskManager.loadFromFile(fileTest);

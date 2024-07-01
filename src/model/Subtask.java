@@ -1,13 +1,15 @@
 package model;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Subtask extends Task {
 
-    private Integer idEpic;
+    private final Integer idEpic;
 
-    public Subtask(String name, String description, Status status, Integer idEpic) {
-        super(name, description, status);
+    public Subtask(String name, String description, Status status, Integer idEpic, LocalDateTime localDateTime, Duration duration) {
+        super(name, description, status, localDateTime, duration);
         this.idEpic = idEpic;
     }
 
@@ -35,11 +37,7 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return "Subtask{" +
-                "ID=" + getIdTask() +
-                ", name='" + getName() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", taskStatus=" + getStatus() +
+        return "Subtask{" + "idEpic=" + idEpic +
                 '}';
     }
 }

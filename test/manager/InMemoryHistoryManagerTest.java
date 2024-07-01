@@ -2,6 +2,7 @@
 1. Исправила тест удаления из середины
  */
 package manager;
+//реализовала все методы класса HistoryManager
 
 import model.Epic;
 import model.Status;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -27,7 +30,7 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void taskDoesNotChangeInHistory() {
-        Task task = manager.addTask(new Task("Задача", "555"));
+        Task task = manager.addTask(new Task("Задача", "555", LocalDateTime.now(), Duration.ofMinutes(5)));
         manager.getByIdTask(task.getIdTask());
         task.setName("Измененная задача");
         manager.updateTask(task);
@@ -54,7 +57,8 @@ class InMemoryHistoryManagerTest {
     @Test
     public void subtaskDoesNotChangeInHistory() {
         Epic epic = manager.addEpic(new Epic("Эпик", "..."));
-        Subtask subtask = manager.addSubtask(new Subtask("Подзадача", "...", Status.DONE, epic.getIdTask()));
+        Subtask subtask = manager.addSubtask(new Subtask("Подзадача", "...", Status.DONE, epic.getIdTask(),
+                LocalDateTime.now(), Duration.ofMinutes(7)));
         manager.getByIdSubtask(subtask.getIdTask());
         subtask.setName("Новое имя");
         manager.updateSubtask(subtask);
@@ -67,9 +71,9 @@ class InMemoryHistoryManagerTest {
 
     @Test
     public void addTaskTest() {
-        Task task1 = new Task("1", 0, "www");
-        Task task2 = new Task("2", 1, "www");
-        Task task3 = new Task("3", 2, "www");
+        Task task1 = new Task("1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(8));
+        Task task3 = new Task("3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(6));
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);
@@ -90,12 +94,25 @@ class InMemoryHistoryManagerTest {
     }
 
     @Test
+    public void removeTest() {
+        Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task3 = new Task("Задача 3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(5));
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+
+        historyManager.remove(task2.getIdTask());
+        Assertions.assertEquals(List.of(task1, task3), historyManager.getHistory(), "Ошибка в методе remove()");
+    }
+
+    @Test
     public void deleteByIdTest() {
-        Task task1 = new Task("Задача 1", 0, "www");
-        Task task2 = new Task("Задача 2", 1, "www");
-        Task task3 = new Task("Задача 3", 2, "www");
-        Task task4 = new Task("Задача 4", 3, "www");
-        Task task5 = new Task("Задача 5", 4, "www");
+        Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task3 = new Task("Задача 3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(5));
+        Task task4 = new Task("Задача 4", 3, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task5 = new Task("Задача 5", 4, "www", LocalDateTime.now(), Duration.ofMinutes(3));
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.add(task3);
@@ -118,6 +135,18 @@ class InMemoryHistoryManagerTest {
         historyManager.remove(task5.getIdTask());
         Assertions.assertEquals(List.of(task2, task4), historyManager.getHistory(),
                 "Порядок списка нарушен(удаление из конца");
+    }
+
+    @Test
+    public void getHistory() {
+        Task task1 = new Task("Задача 1", 0, "www", LocalDateTime.now(), Duration.ofMinutes(2));
+        Task task2 = new Task("Задача 2", 1, "www", LocalDateTime.now(), Duration.ofMinutes(6));
+        Task task3 = new Task("Задача 3", 2, "www", LocalDateTime.now(), Duration.ofMinutes(5));
+        historyManager.add(task1);
+        historyManager.add(task2);
+        historyManager.add(task3);
+
+        Assertions.assertEquals(List.of(task1, task2, task3), historyManager.getHistory(), "Ошибка в вызове истории");
     }
 }
 
