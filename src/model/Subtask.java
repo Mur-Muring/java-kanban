@@ -32,7 +32,7 @@ public class Subtask extends Task {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), idEpic);
+        return Objects.hash(super.hashCode());
     }
 
     @Override

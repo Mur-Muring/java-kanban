@@ -10,7 +10,6 @@ public class Epic extends Task {
     private LocalDateTime endTime;
 
 
-
     public Epic(String name, String description) {
         super(name, description, Status.NEW, null, Duration.ofMinutes(0));
     }
@@ -52,7 +51,7 @@ public class Epic extends Task {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), subtasks, endTime);
+        return Objects.hash(super.hashCode());
     }
 
     @Override

@@ -4,6 +4,7 @@ package manager;
 конкретными значениями быстрее, чем бегать по всем спискам
  */
 
+import exception.NotFoundException;
 import exception.TimeConflictException;
 import model.Epic;
 import model.Status;

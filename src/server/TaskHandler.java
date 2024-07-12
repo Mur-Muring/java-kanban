@@ -8,94 +8,130 @@ import manager.TaskManager;
 import model.Task;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.List;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
-public class TaskHandler extends BaseHttpHandler{
-    private static final Gson gson = new Gson();
-    private final TaskManager manager;
-
-    public TaskHandler(TaskManager manager) {
-        this.manager = manager;
+public class TaskHandler extends BaseHttpHandler {
+    public TaskHandler(TaskManager taskManager, Gson gson) {
+        super(taskManager, gson);
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) throws IOException {
-        String method = exchange.getRequestMethod();
-        String path = exchange.getRequestURI().getPath();
-        String[] segments = path.split("/");
+    public void handle(HttpExchange exchange) throws IOException {
         try {
-            if (segments.length == 2) {
-                switch (method) {
-                    case "GET":
-                        handleGetAll(exchange);
-                        break;
-                    case "POST":
-                        handlePost(exchange);
-                        break;
-                    case "DELETE":
-                        handleDeleteAll(exchange);
-                        break;
-                    default:
-                        sendInternalError(exchange);
+            String requestMethod = exchange.getRequestMethod();
+            switch (requestMethod) {
+                case "GET": {
+                    handleGet(exchange);
+                    break;
                 }
-            } else if (segments.length == 3) {
-                int id = Integer.parseInt(segments[2]);
-                switch (method) {
-                    case "GET":
-                        handleGetById(exchange, id);
-                        break;
-                    case "DELETE":
-                        handleDeleteById(exchange, id);
-                        break;
-                    default:
-                        sendInternalError(exchange);
+                case "POST": {
+                    handlePost(exchange);
+                    break;
+                }
+                case "DELETE": {
+                    handleDelete(exchange);
+                    break;
+                }
+                default: {
+                    sendNotFound(exchange, "Несуществующий ресурс");
+                    break;
                 }
             }
-        } catch (Exception e){
-            e.printStackTrace();
-            sendInternalError(exchange);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        } finally {
+            exchange.close();
         }
-        }
-
-
-    private void handleGetAll(HttpExchange exchange) throws IOException {
-        List<Task> taskList = manager.getAllTasks();
-        String resp = gson.toJson(taskList);
-        sendResponse(exchange, resp);
     }
 
-    private void handleGetById(HttpExchange exchange, int id) throws IOException {
+    private int parsePathID(String path) {
         try {
-            Task task = manager.getByIdTask(id);
-            String resp = gson.toJson(task);
-            sendResponse(exchange, resp);
-        } catch (NotFoundException e){
-            sendNotFound(exchange);
+            return Integer.parseInt(path);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    public void handleGet(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        if (Pattern.matches("^/tasks$", path)) {
+            try {
+                String response = gson.toJson(taskManager.getAllTasks());
+                sendText(exchange, response);
+            } catch (Exception e) {
+                sendInternalServerError(exchange);
+            }
+        }
+        if (Pattern.matches("^/tasks/\\d+$", path)) {
+            try {
+                String pathId = path.replaceFirst("/tasks/", "");
+                int id = parsePathID(pathId);
+                if (id != -1) {
+                    String response = gson.toJson(taskManager.getByIdTask(id));
+                    sendText(exchange, response);
+                }
+            } catch (NotFoundException e) {
+                sendNotFound(exchange, "Задача не найдена");
+            } catch (Exception e) {
+                sendInternalServerError(exchange);
+            }
         }
     }
 
     private void handlePost(HttpExchange exchange) throws IOException {
-        try {
-            Task task = gson.fromJson(new InputStreamReader(exchange.getRequestBody()), Task.class);
-            if (task.getIdTask() == null) {
-                manager.addTask(task);
-            } else {
-                manager.updateTask(task);
+        String path = exchange.getRequestURI().getPath();
+
+        if (Pattern.matches("^/tasks$", path)) {
+            try {
+                InputStream inputStream = exchange.getRequestBody();
+                String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                Task task1 = gson.fromJson(body, Task.class);
+                taskManager.addTask(task1);
+                sendAdd(exchange, "Задача создана");
+            } catch (TimeConflictException exception) {
+                sendHasInteractions(exchange, "Данное время занято");
+            } catch (Exception e) {
+                sendInternalServerError(exchange);
             }
-            sendText(exchange, 201, "Задача успешно добавлена или обновлена");
-        } catch (TimeConflictException e){
-            sendHasInteractions(exchange);
+        }
+        if (Pattern.matches("^/tasks/\\d+$", path)) {
+            try {
+                String pathId = path.replaceFirst("/tasks/", "");
+                int id = parsePathID(pathId);
+                if (id != -1) {
+                    InputStream inputStream = exchange.getRequestBody();
+                    String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+                    Task task = gson.fromJson(body, Task.class);
+                    taskManager.updateTask(task);
+                    sendAdd(exchange, "Задача обновлена");
+                }
+            } catch (TimeConflictException e) {
+                sendHasInteractions(exchange, "Данное время занято");
+            } catch (Exception e) {
+                sendInternalServerError(exchange);
+            }
         }
     }
 
-    private void handleDeleteAll(HttpExchange exchange) throws IOException {
-        manager.deleteTasks();
-        sendText(exchange, 200, "Все задачи удалены");
+    private void handleDelete(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+
+        if (Pattern.matches("^/tasks/\\d+$", path)) {
+            try {
+                String pathId = path.replaceFirst("/tasks/", "");
+                int id = parsePathID(pathId);
+                if (id != -1) {
+                    taskManager.deleteByIdTask(id);
+                    sendText(exchange, "Задача удалена");
+                }
+            } catch (NotFoundException exception) {
+                sendNotFound(exchange, "Задача не найдена");
+            } catch (Exception exception) {
+                sendInternalServerError(exchange);
+            }
+        }
     }
 
-    private void handleDeleteById(HttpExchange exchange, int id) throws IOException {
-        manager.deleteByIdTask(id);
-        sendText(exchange, 200, "Задача с ID " + id + " удалена");
-    }
 }

@@ -6,8 +6,8 @@ import manager.TaskManager;
 
 import java.io.IOException;
 
-public class HistoryHandler extends BaseHttpHandler {
-    public HistoryHandler(TaskManager taskManager, Gson gson) {
+public class PriorityzedHandler extends BaseHttpHandler {
+    public PriorityzedHandler(TaskManager taskManager, Gson gson) {
         super(taskManager, gson);
     }
 
@@ -16,8 +16,8 @@ public class HistoryHandler extends BaseHttpHandler {
         String requestMethod = exchange.getRequestMethod();
         if (requestMethod.equals("GET")) {
             try {
-                String history = gson.toJson(taskManager.getHistory());
-                sendText(exchange, history);
+                String prioritized = gson.toJson(taskManager.getPrioritizedTasks());
+                sendText(exchange, prioritized);
             } catch (Exception e) {
                 sendInternalServerError(exchange);
             }
