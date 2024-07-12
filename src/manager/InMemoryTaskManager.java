@@ -1,10 +1,5 @@
 package manager;
-/*
-1. Написала метод расчета временных полей эпика. Хотела сделать так изнасально, но мне казалось, что работать с
-конкретными значениями быстрее, чем бегать по всем спискам
- */
 
-import exception.NotFoundException;
 import exception.TimeConflictException;
 import model.Epic;
 import model.Status;
