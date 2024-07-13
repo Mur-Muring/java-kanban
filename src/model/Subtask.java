@@ -21,23 +21,4 @@ public class Subtask extends Task {
         return TypeOfTask.SUBTASK;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        Subtask subtask = (Subtask) o;
-        return Objects.equals(idEpic, subtask.idEpic);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode());
-    }
-
-    @Override
-    public String toString() {
-        return "Subtask{" + "idEpic=" + idEpic +
-                '}';
-    }
 }

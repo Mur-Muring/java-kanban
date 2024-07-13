@@ -1,4 +1,5 @@
 package server;
+// 1. обьединила логику handlePost()
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -97,57 +98,52 @@ public class EpicHandler extends BaseHttpHandler {
 
     private void handlePost(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
+        boolean isUpdate = Pattern.matches("^/epics/\\d+$", path);
 
-        if (Pattern.matches("^/epics$", path)) {
-            try {
-                InputStream inputStream = exchange.getRequestBody();
-                String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                Epic epic = gson.fromJson(body, Epic.class);
-                taskManager.addEpic(epic);
-                sendAdd(exchange, "Эпик создан");
-            } catch (TimeConflictException exception) {
-                sendHasInteractions(exchange, "Данное время занято");
-            } catch (Exception e) {
-                sendInternalServerError(exchange);
-            }
-        }
-        if (Pattern.matches("^/epics/\\d+$", path)) {
-            try {
+        try {
+            InputStream inputStream = exchange.getRequestBody();
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            Epic epic = gson.fromJson(body, Epic.class);
+
+            if (isUpdate) {
                 String pathId = path.replaceFirst("/epics/", "");
                 int id = parsePathID(pathId);
                 if (id != -1) {
-                    InputStream inputStream = exchange.getRequestBody();
-                    String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-                    Epic epic = gson.fromJson(body, Epic.class);
                     taskManager.updateEpic(epic);
                     sendAdd(exchange, "Эпик обновлен");
                 }
-            } catch (TimeConflictException e) {
-                sendHasInteractions(exchange, "Данное время занято");
-            } catch (Exception e) {
-                sendInternalServerError(exchange);
+            } else {
+                taskManager.addEpic(epic);
+                sendAdd(exchange, "Эпик создан");
             }
+        } catch (TimeConflictException exception) {
+            sendHasInteractions(exchange, "Данное время занято");
+        } catch (Exception e) {
+            sendInternalServerError(exchange);
         }
     }
 
     private void handleDelete(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
+        boolean isDeleteAll = Pattern.matches("^/epics$", path);
 
-        if (Pattern.matches("^/epics/\\d+$", path)) {
-            try {
+        try {
+            if (isDeleteAll) {
+                taskManager.deleteEpics();
+                System.out.println("Удалены все эпики");
+            } else if (Pattern.matches("^/epics/\\d+$", path)) {
                 String pathId = path.replaceFirst("/epics/", "");
                 int id = parsePathID(pathId);
                 if (id != -1) {
                     taskManager.deleteByIdEpic(id);
                     System.out.println("Удален эпик под индексом " + id);
-                    exchange.sendResponseHeaders(200, 0);
                 }
-            } catch (NotFoundException exception) {
-                sendNotFound(exchange, "Эпик не найден");
-            } catch (Exception exception) {
-                sendInternalServerError(exchange);
             }
+            exchange.sendResponseHeaders(200, 0);
+        } catch (NotFoundException exception) {
+            sendNotFound(exchange, "Эпик не найден");
+        } catch (Exception exception) {
+            sendInternalServerError(exchange);
         }
     }
-
 }

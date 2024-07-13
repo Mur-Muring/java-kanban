@@ -1,5 +1,5 @@
 package server;
-
+// Добавила удаление всех задач в случае отсуствия id в handleDelete(), а так аналогично у подзадач и задач
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import exception.NotFoundException;
@@ -117,21 +117,26 @@ public class TaskHandler extends BaseHttpHandler {
 
     private void handleDelete(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
+        boolean isDeleteAll = Pattern.matches("^/tasks$", path);
 
-        if (Pattern.matches("^/tasks/\\d+$", path)) {
-            try {
+        try {
+            if (isDeleteAll) {
+                taskManager.deleteTasks();
+                System.out.println("Удалены все задачи");
+            } else if (Pattern.matches("^/tasks/\\d+$", path)) {
                 String pathId = path.replaceFirst("/tasks/", "");
                 int id = parsePathID(pathId);
                 if (id != -1) {
                     taskManager.deleteByIdTask(id);
-                    sendText(exchange, "Задача удалена");
+                    System.out.println("Удаленa задача под индексом " + id);
                 }
-            } catch (NotFoundException exception) {
-                sendNotFound(exchange, "Задача не найдена");
-            } catch (Exception exception) {
-                sendInternalServerError(exchange);
             }
+           exchange.sendResponseHeaders(200, 0);
+        } catch (NotFoundException exception) {
+            sendNotFound(exchange, "Задача не найдена");
+        } catch (Exception exception) {
+            sendInternalServerError(exchange);
         }
     }
+    }
 
-}

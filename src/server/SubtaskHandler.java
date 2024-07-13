@@ -119,20 +119,25 @@ public class SubtaskHandler extends BaseHttpHandler {
 
     private void handleDelete(HttpExchange exchange) throws IOException {
         String path = exchange.getRequestURI().getPath();
+        boolean isDeleteAll = Pattern.matches("^/subtasks$", path);
 
-        if (Pattern.matches("^/tasks/\\d+$", path)) {
-            try {
-                String pathId = path.replaceFirst("/tasks/", "");
+        try {
+            if (isDeleteAll) {
+                taskManager.deleteSubtasks();
+                System.out.println("Удалены все подзадачи");
+            } else if (Pattern.matches("^/subtasks/\\d+$", path)) {
+                String pathId = path.replaceFirst("/subtasks/", "");
                 int id = parsePathID(pathId);
                 if (id != -1) {
                     taskManager.deleteByIdSubtask(id);
-                    sendText(exchange, "Подзадача удалена");
+                    System.out.println("Удаленa подзадача под индексом " + id);
                 }
-            } catch (NotFoundException exception) {
-                sendNotFound(exchange, "Подзадача не найдена");
-            } catch (Exception exception) {
-                sendInternalServerError(exchange);
             }
+            exchange.sendResponseHeaders(200, 0);
+        } catch (NotFoundException exception) {
+            sendNotFound(exchange, "Подзадача не найдена");
+        } catch (Exception exception) {
+            sendInternalServerError(exchange);
         }
     }
 }

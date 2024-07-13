@@ -53,10 +53,10 @@ public class HttpTaskServerTest {
         HttpRequest request = HttpRequest.newBuilder().uri(url).POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        expectedTask.setIdTask(0);
+        expectedTask.setIdTask(1);
 
         assertEquals(201, response.statusCode(), "Код ответа не совпадает");
-        assertEquals(expectedTask, taskManager.getByIdTask(0), "Задачи не совпадают");
+        assertEquals(expectedTask, taskManager.getByIdTask(1), "Задачи не совпадают");
 
     }
 
@@ -64,7 +64,7 @@ public class HttpTaskServerTest {
     public void shouldCorrectlyReturnTaskById() throws IOException, InterruptedException {
         Task createdTask = new Task("Task", "Description",
                 LocalDateTime.of(2024, 12, 12, 12, 12), Duration.ofMinutes(15));
-        URI url = URI.create("http://localhost:8080/tasks/0");
+        URI url = URI.create("http://localhost:8080/tasks/1");
         taskManager.addTask(createdTask);
         String expectedResponse = gson.toJson(createdTask);
 
@@ -102,7 +102,7 @@ public class HttpTaskServerTest {
         Task task = new Task("Test 2", "Testing task 2", LocalDateTime.now(), Duration.ofMinutes(5));
         taskManager.addTask(task);
 
-        URI url = URI.create("http://localhost:8080/tasks/0");
+        URI url = URI.create("http://localhost:8080/tasks/1");
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().uri(url).method("DELETE", HttpRequest.BodyPublishers.ofString("tasks")).build();
 
@@ -120,10 +120,10 @@ public class HttpTaskServerTest {
                 LocalDateTime.of(2024, 12, 12, 12, 12), Duration.ofMinutes(15));
         Task updatedTask = new Task("Task", "Description",
                 LocalDateTime.of(2025, 12, 12, 12, 12), Duration.ofMinutes(15));
-        URI url = URI.create("http://localhost:8080/tasks/0");
+        URI url = URI.create("http://localhost:8080/tasks/1");
 
         taskManager.addTask(createdTask);
-        updatedTask.setIdTask(0);
+        updatedTask.setIdTask(1);
 
         String body = gson.toJson(updatedTask);
 
@@ -133,7 +133,7 @@ public class HttpTaskServerTest {
 
         assertEquals(201, response.statusCode());
 
-        assertEquals(updatedTask, taskManager.getByIdTask(0));
+        assertEquals(updatedTask, taskManager.getByIdTask(1));
     }
 
     @Test
@@ -150,9 +150,9 @@ public class HttpTaskServerTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(201, response.statusCode());
-        expectedSubTask.setIdTask(1);
+        expectedSubTask.setIdTask(2);
 
-        assertEquals(expectedSubTask, taskManager.getByIdSubtask(1));
+        assertEquals(expectedSubTask, taskManager.getByIdSubtask(2));
     }
 
     @Test
@@ -166,7 +166,7 @@ public class HttpTaskServerTest {
         URI url = URI.create("http://localhost:8080/subtasks");
 
         taskManager.addSubtask(createdSub);
-        updatedSub.setIdTask(1);
+        updatedSub.setIdTask(2);
 
         String body = gson.toJson(updatedSub);
 
@@ -175,7 +175,7 @@ public class HttpTaskServerTest {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         assertEquals(201, response.statusCode());
-        assertEquals(updatedSub, taskManager.getByIdSubtask(1));
+        assertEquals(updatedSub, taskManager.getByIdSubtask(2));
     }
 
     @Test
@@ -186,7 +186,7 @@ public class HttpTaskServerTest {
                 LocalDateTime.of(2024, 12, 12, 12, 12), Duration.ofMinutes(15));
         taskManager.addSubtask(expectedSubTask);
 
-        URI url = URI.create("http://localhost:8080/subtasks/1");
+        URI url = URI.create("http://localhost:8080/subtasks/2");
         String expected = gson.toJson(expectedSubTask);
 
         HttpRequest request = HttpRequest.newBuilder().uri(url).GET().build();
@@ -237,15 +237,15 @@ public class HttpTaskServerTest {
 
 
         assertEquals(201, response.statusCode());
-        expectedEpic.setIdTask(0);
+        expectedEpic.setIdTask(1);
 
-        assertEquals(expectedEpic, taskManager.getByIdEpic(0));
+        assertEquals(expectedEpic, taskManager.getByIdEpic(1));
     }
 
     @Test
     public void shouldCorrectlyReturnEpicById() throws IOException, InterruptedException {
         Epic expectedEpic = new Epic("Epic", "Description");
-        URI url = URI.create("http://localhost:8080/epics/0");
+        URI url = URI.create("http://localhost:8080/epics/1");
         taskManager.addEpic(expectedEpic);
         String expectedResponse = gson.toJson(expectedEpic);
 

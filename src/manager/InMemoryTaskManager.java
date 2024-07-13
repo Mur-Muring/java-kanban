@@ -1,4 +1,5 @@
 package manager;
+// id теперь с 1, все тксты поправила
 
 import exception.TimeConflictException;
 import model.Epic;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    private Integer idCounter = 0;
+    private Integer idCounter = 1;
 
     HistoryManager historyManager = Managers.getDefaultHistory();
 
