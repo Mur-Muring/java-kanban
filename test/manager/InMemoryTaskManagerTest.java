@@ -68,7 +68,7 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         String nameAfter = task.getName();
         String description = "день тяжелый";
         String descriptionAfter = task.getDescription();
-        int id = 0;
+        int id = 1;
         int idAfter = task.getIdTask();
         Status status = Status.NEW;
         Status statusAfter = task.getStatus();
@@ -90,9 +90,9 @@ class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager> {
         Epic epic = new Epic("Ночь", "...");
         taskManager.addEpic(epic);
         Status status = epic.getStatus();
-        Subtask subtask1 = new Subtask("...", "...", Status.NEW, 0, LocalDateTime.now(), Duration.ofMinutes(2));
+        Subtask subtask1 = new Subtask("...", "...", Status.NEW, epic.getIdTask(), LocalDateTime.now(), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask1);
-        Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0, LocalDateTime.now().plusHours(1), Duration.ofMinutes(2));
+        Subtask subtask2 = new Subtask("...", "...", Status.NEW, epic.getIdTask(), LocalDateTime.now().plusHours(1), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask2);
 
         assertEquals(status, Status.NEW, "Нарушено условие все позадачи имеют статус NEW");

@@ -71,7 +71,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         assertNotNull(subtaskSave, "Задача не найдена.");
         assertEquals(subtask, subtaskSave);
 
-        final List<Subtask> subtasks = taskManager.getSubtasksEpic(0);
+        final List<Subtask> subtasks = taskManager.getSubtasksEpic(1);
         assertNotNull(subtasks, "Задачи не возвращаются.");
         assertEquals(2, subtasks.size(), "Неверное количество задач.");
         assertEquals(subtask, subtasks.get(0), "Задачи не совпадают.");
@@ -263,9 +263,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     public void deleteSubtasks() {
         Epic epic = new Epic("Ночь", "...");
         taskManager.addEpic(epic);
-        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0, LocalDateTime.of(2024, 4, 13, 11, 50), Duration.ofMinutes(2));
+        Subtask subtask1 = new Subtask("...", "...", Status.DONE, epic.getIdTask(), LocalDateTime.of(2024, 4, 13, 11, 50), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask1);
-        Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0, LocalDateTime.of(2024, 4, 13, 14, 54), Duration.ofMinutes(2));
+        Subtask subtask2 = new Subtask("...", "...", Status.NEW, epic.getIdTask(), LocalDateTime.of(2024, 4, 13, 14, 54), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask2);
 
         assertEquals(subtask2.getStartTime().plus(subtask2.getDuration()), epic.getEndTime(),
@@ -312,9 +312,9 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     void deleteByIdSubtaskTest() {
         Epic epic = new Epic("Ночь", "...");
         taskManager.addEpic(epic);
-        Subtask subtask1 = new Subtask("...", "...", Status.DONE, 0, LocalDateTime.of(2024, 4, 13, 11, 50), Duration.ofMinutes(2));
+        Subtask subtask1 = new Subtask("...", "...", Status.DONE, epic.getIdTask(), LocalDateTime.of(2024, 4, 13, 11, 50), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask1);
-        Subtask subtask2 = new Subtask("...", "...", Status.NEW, 0, LocalDateTime.of(2024, 4, 13, 14, 54), Duration.ofMinutes(2));
+        Subtask subtask2 = new Subtask("...", "...", Status.NEW, epic.getIdTask(), LocalDateTime.of(2024, 4, 13, 14, 54), Duration.ofMinutes(2));
         taskManager.addSubtask(subtask2);
 
         Integer idDelete = subtask2.getIdTask();
